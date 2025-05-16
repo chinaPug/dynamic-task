@@ -5,6 +5,6 @@ import cn.pug.dynamic.task.script.template.model.Result;
 
 import java.util.concurrent.CompletableFuture;
 
-public interface Scene<T> {
+public interface Scene {
     CompletableFuture<Result> action(Event event);
 } 

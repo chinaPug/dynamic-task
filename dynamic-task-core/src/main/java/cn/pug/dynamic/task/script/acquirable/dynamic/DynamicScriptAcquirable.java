@@ -22,8 +22,8 @@ import java.util.concurrent.TimeUnit;
 
 @Slf4j
 public class DynamicScriptAcquirable implements ScriptManager {
-    private final Map<String, SoftReference<Map.Entry<String, Scene<?>>>> sceneMap = new ConcurrentHashMap<>(64);
-    private final ReferenceQueue<Map.Entry<String, Scene<?>>> referenceQueue = new ReferenceQueue<>();
+    private final Map<String, SoftReference<Map.Entry<String, Scene>>> sceneMap = new ConcurrentHashMap<>(64);
+    private final ReferenceQueue<Map.Entry<String, Scene>> referenceQueue = new ReferenceQueue<>();
     private final ScheduledExecutorService cleanupExecutor = Executors.newSingleThreadScheduledExecutor();
     private DynamicTaskProperties properties;
 
@@ -39,9 +39,9 @@ public class DynamicScriptAcquirable implements ScriptManager {
 
     private void cleanupReferences() {
         try {
-            Reference<? extends Map.Entry<String, Scene<?>>> ref;
+            Reference<? extends Map.Entry<String, Scene>> ref;
             while ((ref = referenceQueue.poll()) != null) {
-                final Reference<? extends Map.Entry<String, Scene<?>>> finalRef = ref;
+                final Reference<? extends Map.Entry<String, Scene>> finalRef = ref;
                 // Find and remove the entry from sceneMap
                 sceneMap.entrySet().removeIf(entry -> entry.getValue() == finalRef);
                 log.info("Cleaned up garbage collected scene reference");
@@ -51,13 +51,13 @@ public class DynamicScriptAcquirable implements ScriptManager {
         }
     }
 
-    public Scene<?> getScene(Event event) {
+    public Scene getScene(Event event) {
         String identifyVal = event.getIdentifyVal();
         String scriptVersion = event.getScriptVersion();
         log.info("正在获取场景，标识值：{}，版本：{}", identifyVal, scriptVersion);
         
-        SoftReference<Map.Entry<String, Scene<?>>> ref = sceneMap.get(identifyVal);
-        Map.Entry<String, Scene<?>> entry = ref != null ? ref.get() : null;
+        SoftReference<Map.Entry<String, Scene>> ref = sceneMap.get(identifyVal);
+        Map.Entry<String, Scene> entry = ref != null ? ref.get() : null;
         
         if (entry != null) {
             String currentVersion = entry.getKey();
@@ -99,8 +99,8 @@ public class DynamicScriptAcquirable implements ScriptManager {
         }
         String jarName = identifyVal + "-" + scriptVersion + ".jar";
         URL jarUrl;
-        Scene<?> scene;
-        Class<? extends Scene<?>> clazz;
+        Scene scene;
+        Class<? extends Scene> clazz;
         log.info("正在注册场景，JAR包：{}", jarName);
 
         File localJar = new File(this.properties.getLocalJarPath() + "/" + jarName);
@@ -134,7 +134,7 @@ public class DynamicScriptAcquirable implements ScriptManager {
             throw new RuntimeException("实例化场景对象失败：" + clazz.getName(), e);
         }
         
-        Map.Entry<String, Scene<?>> entry = new AbstractMap.SimpleEntry<>(scriptVersion, scene);
+        Map.Entry<String, Scene> entry = new AbstractMap.SimpleEntry<>(scriptVersion, scene);
         sceneMap.put(identifyVal, new SoftReference<>(entry, referenceQueue));
     }
 

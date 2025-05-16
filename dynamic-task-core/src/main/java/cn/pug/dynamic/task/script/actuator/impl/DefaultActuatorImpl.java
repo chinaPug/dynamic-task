@@ -43,7 +43,7 @@ public final class DefaultActuatorImpl implements Actuator,ScriptAcquirable {
             log.error("任务【{}】——输入参数不合法", event.getTaskId()==null?"null":event.getTaskId());
             return CompletableFuture.completedFuture(Result.error(event.getTaskId()==null?"null":event.getTaskId(), TaskCodeMsg.EVENT_PARAM_ERROR));
         }
-        Scene<?> scene;
+        Scene scene;
         try {
             scene = scriptAcquirable.getScene(event);
         } catch (Exception e) {
@@ -67,7 +67,7 @@ public final class DefaultActuatorImpl implements Actuator,ScriptAcquirable {
      * @return Scene
      */
     @Override
-    public Scene<?> getScene(Event event) {
+    public Scene getScene(Event event) {
         return scriptAcquirable.getScene(event);
     }
 }

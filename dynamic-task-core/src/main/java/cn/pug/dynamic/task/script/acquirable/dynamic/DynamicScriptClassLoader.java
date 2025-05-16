@@ -27,7 +27,7 @@ public class DynamicScriptClassLoader extends URLClassLoader {
         super(urls, parent);
     }
 
-    public static Class<? extends Scene<?>> loadJarFromRemote(String remotePath, String jarName, String localPath) throws IOException {
+    public static Class<? extends Scene> loadJarFromRemote(String remotePath, String jarName, String localPath) throws IOException {
         String auth="ftpuser:ftpuser@";
         String remoteUrl="ftp://"+auth+remotePath;
         File localJar=File.createTempFile(jarName, ".jar");
@@ -52,7 +52,7 @@ public class DynamicScriptClassLoader extends URLClassLoader {
      * @param jarUrl JAR 文件的 URL
      * @throws IOException 如果加载过程中发生 I/O 错误
      */
-    public static Class<? extends Scene<?>> loadJarFromUrl(URL jarUrl) {
+    public static Class<? extends Scene> loadJarFromUrl(URL jarUrl) {
         Class<?> targetClass = null;
         try (DynamicScriptClassLoader classLoader = new DynamicScriptClassLoader(new URL[]{jarUrl}, DynamicScriptClassLoader.class.getClassLoader())){
             // 使用 JarFile 读取 JAR 文件（支持本地文件路径或远程流）
@@ -99,7 +99,7 @@ public class DynamicScriptClassLoader extends URLClassLoader {
             log.error("加载类失败: ", e);
             throw new PredicateException(TaskCodeMsg.CLASS_LOAD_ERROR);
         }
-        return (Class<? extends Scene<?>>) targetClass;
+        return (Class<? extends Scene>) targetClass;
     }
 
     /**

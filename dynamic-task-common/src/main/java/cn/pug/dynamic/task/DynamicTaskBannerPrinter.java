@@ -10,10 +10,10 @@ import org.springframework.boot.ansi.AnsiOutput;
 import org.springframework.boot.ansi.AnsiStyle;
 @Slf4j
 public class DynamicTaskBannerPrinter implements InitializingBean {
-    private final DynamicTaskProperties dtpProperties;
+    private final DynamicTaskProperties DynamicTaskProperties;
 
-    public DynamicTaskBannerPrinter(DynamicTaskProperties dtpProperties) {
-        this.dtpProperties = dtpProperties;
+    public DynamicTaskBannerPrinter(DynamicTaskProperties DynamicTaskProperties) {
+        this.DynamicTaskProperties = DynamicTaskProperties;
     }
 
     private static final String NAME = " :: Dynamic Task :: ";
@@ -27,7 +27,7 @@ public class DynamicTaskBannerPrinter implements InitializingBean {
 
     @Override
     public void afterPropertiesSet() {
-        if (!dtpProperties.isEnabledBanner()) {
+        if (!DynamicTaskProperties.isEnabledBanner()) {
             return;
         }
         log.info(AnsiOutput.toString(BANNER, "\n", AnsiColor.GREEN, NAME,
