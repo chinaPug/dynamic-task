@@ -5,16 +5,24 @@ import lombok.Data;
 
 @Data
 @Builder
-public class Result {
+public class Result<T> {
     protected String taskId;
     protected boolean success;
     protected TaskCodeMsg taskCodeMsg;
+    protected T data;
 
-    public static Result success(String taskId) {
+    public static Result success(String taskId, Object data) {
         return Result.builder()
                 .taskId(taskId)
                 .success(true)
-                .taskCodeMsg(TaskCodeMsg.SUCCESS)
+                .data(data)
+                .build();
+    }
+
+    public static Result success(String taskId){
+        return Result.builder()
+                .taskId(taskId)
+                .success(true)
                 .build();
     }
 

@@ -53,9 +53,9 @@ public final class DefaultActuatorImpl implements Actuator,ScriptAcquirable {
         if (scene == null) {
             return CompletableFuture.completedFuture(Result.error(event.getTaskId(), TaskCodeMsg.SCRIPT_NOT_FOUND));
         }
-        CompletableFuture future = scene.action(event);
+        CompletableFuture<? extends Result> future = scene.action(event);
         return future.handle((result, e) -> {
-            if (Objects.nonNull(e)) {
+            if (e!=null) {
                 log.error("任务【{}】——action函数执行异常", event.getTaskId(), e);
             }
             return result;
