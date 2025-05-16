@@ -8,8 +8,8 @@ import java.io.Serializable;
 @Data
 @Builder
 public class TaskCodeMsg implements Serializable {
-    private Integer code;
-    private String message;
+    protected Integer code;
+    protected String message;
 
     public static TaskCodeMsg SUCCESS = new TaskCodeMsg(0, "成功");
     public static TaskCodeMsg UNKNOWN_ERROR = new TaskCodeMsg(-1, "未知错误");
