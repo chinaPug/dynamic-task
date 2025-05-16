@@ -1,0 +1,38 @@
+{
+  "groups": [
+    {
+      "name": "script",
+      "type": "cn.pug.dynamic.task.config.DynamicTaskProperties",
+      "sourceType": "cn.pug.dynamic.task.config.DynamicTaskProperties"
+    }
+  ],
+  "properties": [
+    {
+      "name": "script.enable",
+      "type": "java.lang.Boolean",
+      "description": "Whether to enable dynamic task framework.",
+      "sourceType": "cn.pug.dynamic.task.config.DynamicTaskProperties",
+      "defaultValue": false
+    },
+    {
+      "name": "script.local-jar-path",
+      "type": "java.lang.String",
+      "description": "Local path for script JAR files.",
+      "sourceType": "cn.pug.dynamic.task.config.DynamicTaskProperties"
+    },
+    {
+      "name": "script.remote-jar-url",
+      "type": "java.lang.String",
+      "description": "Remote URL for script JAR files.",
+      "sourceType": "cn.pug.dynamic.task.config.DynamicTaskProperties"
+    },
+    {
+      "name": "script.enabled-banner",
+      "type": "java.lang.Boolean",
+      "description": "Whether to enable startup banner.",
+      "sourceType": "cn.pug.dynamic.task.config.DynamicTaskProperties",
+      "defaultValue": true
+    }
+  ],
+  "hints": []
+} 

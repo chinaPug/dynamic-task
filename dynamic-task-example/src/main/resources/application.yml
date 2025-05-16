@@ -1,0 +1,6 @@
+script:
+  enable: true
+  local-jar-path: /Users/chinaPug/code/java/script-test/target
+  remote-jar-url: /Users/chinaPug/code/java/script-test/target
+  enabled-banner: true
+  logPath: /Users/chinaPug/code/java/script-test/target
