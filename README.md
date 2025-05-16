@@ -18,6 +18,7 @@ Dynamic Task Framework 是一个基于 Spring Boot Starter 的动态插件热部
 项目采用多模块设计，包含以下模块：
 
 - `dynamic-task-api`: 核心接口和模型定义，约束插件开发规范
+- `dynamic-task-common`: 公共工具与基础组件，提供常用工具类、常量、Spring环境支持等
 - `dynamic-task-core`: 核心功能实现，包括任务调度、插件生命周期管理、插件加载与卸载、内存优化等机制
 - `dynamic-task-starter`: Spring Boot 启动器与自动配置
 - `dynamic-task-example`: 使用示例与最佳实践
