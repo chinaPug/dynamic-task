@@ -12,7 +12,7 @@ import java.util.concurrent.CompletableFuture;
 public abstract class AbstractScene<T,R>  implements Scene<Result<?>,Event<?>>{
 
     @Override
-    public CompletableFuture<Result<?>> action(Event<?> event){
+    public final CompletableFuture<Result<?>> action(Event<?> event){
         Result<?> result;
         log.info("任务【{}】——开始执行", event.getTaskId());
         try {
