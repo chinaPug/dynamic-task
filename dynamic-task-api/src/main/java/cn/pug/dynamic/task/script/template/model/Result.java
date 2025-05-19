@@ -11,7 +11,7 @@ public class Result<T> {
     protected TaskCodeMsg taskCodeMsg;
     protected T data;
 
-    public static Result success(String taskId, Object data) {
+    public static Result<?> success(String taskId, Object data) {
         return Result.builder()
                 .taskId(taskId)
                 .success(true)
@@ -19,14 +19,14 @@ public class Result<T> {
                 .build();
     }
 
-    public static Result success(String taskId){
+    public static Result<?> success(String taskId){
         return Result.builder()
                 .taskId(taskId)
                 .success(true)
                 .build();
     }
 
-    public static Result error(String taskId, TaskCodeMsg taskCodeMsg) {
+    public static Result<?> error(String taskId, TaskCodeMsg taskCodeMsg) {
         return Result.builder()
                 .taskId(taskId)
                 .success(false)
