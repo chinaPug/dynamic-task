@@ -21,7 +21,7 @@ public class DefaultExecutorManager implements ExecutorManager {
     private final Map<String, ExecutorServiceWrapper> executorServiceMap = new ConcurrentHashMap<>();
     private final static String defaultExecutorName = "default-dynamic-task-executor";
 
-    public DefaultExecutorManager(int corePoolSize, int maximumPoolSize, long keepAliveTime, int queueCapacity,DynamicTaskProperties dynamicTaskProperties) {
+    public DefaultExecutorManager(int corePoolSize, int maximumPoolSize, long keepAliveTime, int queueCapacity, DynamicTaskProperties dynamicTaskProperties) {
         ExecutorService defaultExecutorService = new ThreadPoolExecutor(
                 corePoolSize,
                 maximumPoolSize,
@@ -32,7 +32,7 @@ public class DefaultExecutorManager implements ExecutorManager {
                 new ThreadPoolExecutor.AbortPolicy()
         );
         registerExecutor(defaultExecutorName, defaultExecutorService);
-        this.dynamicTaskProperties=dynamicTaskProperties;
+        this.dynamicTaskProperties = dynamicTaskProperties;
     }
 
     @Override
@@ -63,6 +63,7 @@ public class DefaultExecutorManager implements ExecutorManager {
 
     /**
      * 默认是随机选择线程池
+     *
      * @param event
      * @return
      */
@@ -70,29 +71,29 @@ public class DefaultExecutorManager implements ExecutorManager {
     public ExecutorServiceWrapper choose(Event<?> event) {
         String chooseExecutorServiceName;
         // 移除默认线程池后随机选择线程池
-        if (executorServiceMap.size()==1){
-            chooseExecutorServiceName=defaultExecutorName;
-        }
-        else {
+        if (executorServiceMap.size() == 1) {
+            chooseExecutorServiceName = defaultExecutorName;
+        } else {
             chooseExecutorServiceName = executorServiceMap.keySet().stream().filter(name -> !name.equals(defaultExecutorName)).collect(Collectors.collectingAndThen(
                     Collectors.toList(),
                     list -> list.get(new Random().nextInt(list.size()))
             ));
         }
         // 这里是防止并发时线程池被注销，从而获取失败的情况。获取失败时，默认线程池被选择
-        return executorServiceMap.getOrDefault(chooseExecutorServiceName,  executorServiceMap.get(defaultExecutorName));
+        return executorServiceMap.getOrDefault(chooseExecutorServiceName, executorServiceMap.get(defaultExecutorName));
     }
 
     /**
      * 将生产资料和制作方式提交到线程池运行，并异步返回结果
+     *
      * @param event
      * @param sceneService
      * @return
      */
     @Override
-    public CompletableFuture<Result<?>> execute(Event<?> event, SceneService<?,?> sceneService) {
-        ExecutorServiceWrapper executorServiceWrapper=choose(event);
-        return executorServiceWrapper.submit(event,sceneService);
+    public CompletableFuture<Result<?>> execute(Event<?> event, SceneService<?, ?> sceneService) {
+        ExecutorServiceWrapper executorServiceWrapper = choose(event);
+        return executorServiceWrapper.submit(event, sceneService);
     }
 
     static class DefaultRejectExecutionHandler implements RejectedExecutionHandler {
@@ -107,13 +108,13 @@ public class DefaultExecutorManager implements ExecutorManager {
 
 
     static class DefaultThreadFactory implements ThreadFactory {
-        private final AtomicInteger counter=new AtomicInteger(0);
+        private final AtomicInteger counter = new AtomicInteger(0);
         private final String prefixName;
         private final Thread.UncaughtExceptionHandler uncaughtExceptionHandler;
 
         public DefaultThreadFactory(String prefixName) {
-            this.prefixName=prefixName;
-            this.uncaughtExceptionHandler= new DefaultUncaughtExceptionHandler();
+            this.prefixName = prefixName;
+            this.uncaughtExceptionHandler = new DefaultUncaughtExceptionHandler();
         }
 
         @Override
@@ -153,7 +154,7 @@ public class DefaultExecutorManager implements ExecutorManager {
     @PostConstruct
     public void init() {
         log.info("初始化线程池");
-        List<DynamicTaskProperties.ExecutorConfig> executorConfigList=dynamicTaskProperties.getExecutor();
+        List<DynamicTaskProperties.ExecutorConfig> executorConfigList = dynamicTaskProperties.getExecutor();
         executorConfigList.forEach(
                 executorConfig -> {
                     registerExecutor(

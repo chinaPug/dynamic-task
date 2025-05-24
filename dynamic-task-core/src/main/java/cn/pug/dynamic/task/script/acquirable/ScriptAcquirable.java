@@ -9,5 +9,5 @@ import cn.pug.dynamic.task.script.template.model.Result;
  * 脚本获取能力
  */
 public interface ScriptAcquirable {
-    SceneService<?,?> getSceneService(Event<?> event);
+    SceneService<?, ?> getSceneService(Event<?> event);
 }

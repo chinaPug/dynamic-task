@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.concurrent.CompletableFuture;
+
 @Slf4j
 @Component
 public final class DefaultActuatorImpl implements Actuator {
@@ -30,6 +31,7 @@ public final class DefaultActuatorImpl implements Actuator {
 
     /**
      * 提交入口
+     *
      * @param event
      * @return
      */
@@ -40,16 +42,17 @@ public final class DefaultActuatorImpl implements Actuator {
             log.error("任务【{}】——event为null", "null");
             return CompletableFuture.completedFuture(Result.error("null", TaskCodeMsg.EVENT_IS_NULL));
         }
-        if (!isValidEvent(event)){
-            log.error("任务【{}】——输入参数不合法", event.getTaskId()==null?"null":event.getTaskId());
-            return CompletableFuture.completedFuture(Result.error(event.getTaskId()==null?"null":event.getTaskId(), TaskCodeMsg.EVENT_PARAM_ERROR));
+        if (!isValidEvent(event)) {
+            log.error("任务【{}】——输入参数不合法", event.getTaskId() == null ? "null" : event.getTaskId());
+            return CompletableFuture.completedFuture(Result.error(event.getTaskId() == null ? "null" : event.getTaskId(), TaskCodeMsg.EVENT_PARAM_ERROR));
         }
         /**/
 
         /*获取Scene实例**/
-        SceneService<?,?> sceneService;
+        SceneService<?, ?> sceneService;
         try {
-            sceneService = scriptAcquirable.getSceneService(event);;
+            sceneService = scriptAcquirable.getSceneService(event);
+            ;
         } catch (Exception e) {
             log.error("任务【{}】——获取Scene执行异常", event.getTaskId(), e);
             return CompletableFuture.completedFuture(Result.error(event.getTaskId(), TaskCodeMsg.GET_SCRIPT_ERROR));
@@ -57,9 +60,9 @@ public final class DefaultActuatorImpl implements Actuator {
         /**/
 
         /*提交到线程池，并返回结果**/
-        CompletableFuture<? extends Result<?>> completableFuture=executorManager.execute(event, sceneService);
+        CompletableFuture<? extends Result<?>> completableFuture = executorManager.execute(event, sceneService);
         return completableFuture.handle((result, e) -> {
-            if (e!=null) {
+            if (e != null) {
                 log.error("任务【{}】——action函数执行异常", event.getTaskId(), e);
             }
             return result;

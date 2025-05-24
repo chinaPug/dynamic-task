@@ -26,9 +26,9 @@ public class DynamicScriptClassLoader extends URLClassLoader {
     }
 
 
-    public static Class<? extends SceneService<?,?>> loadJarFromUrl(URL jarUrl) {
+    public static Class<? extends SceneService<?, ?>> loadJarFromUrl(URL jarUrl) {
         Class<?> targetClass = null;
-        try (DynamicScriptClassLoader classLoader = new DynamicScriptClassLoader(new URL[]{jarUrl}, DynamicScriptClassLoader.class.getClassLoader())){
+        try (DynamicScriptClassLoader classLoader = new DynamicScriptClassLoader(new URL[]{jarUrl}, DynamicScriptClassLoader.class.getClassLoader())) {
             // 使用 JarFile 读取 JAR 文件（支持本地文件路径或远程流）
             try (JarFile jarFile = new JarFile(jarUrl.getPath())) {
                 Enumeration<JarEntry> entries = jarFile.entries();
@@ -49,14 +49,14 @@ public class DynamicScriptClassLoader extends URLClassLoader {
                             Class<?> clazz;
                             // 遵循双亲委派
                             try {
-                                log.info("抛给父类加载器加载类: "+className);
+                                log.info("抛给父类加载器加载类: " + className);
                                 classLoader.getParent().loadClass(className);
-                            }catch (ClassNotFoundException e){
-                                log.info("父类加载器加载失败，交由本层加载器加载: "+className);
+                            } catch (ClassNotFoundException e) {
+                                log.info("父类加载器加载失败，交由本层加载器加载: " + className);
                                 try {
-                                    clazz=classLoader.defineClass(className, classBytes, 0, classBytes.length);
+                                    clazz = classLoader.defineClass(className, classBytes, 0, classBytes.length);
                                     // 判断类是否继承自 Scene且添加了 Script 注解
-                                    if (Scene.class.isAssignableFrom(clazz)&&clazz.getAnnotation(Script.class)!=null){
+                                    if (Scene.class.isAssignableFrom(clazz) && clazz.getAnnotation(Script.class) != null) {
                                         targetClass = clazz;
                                     }
                                 } catch (Exception ex) {
@@ -69,11 +69,11 @@ public class DynamicScriptClassLoader extends URLClassLoader {
                     }
                 }
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             log.error("加载类失败: ", e);
             throw new PredicateException(TaskCodeMsg.CLASS_LOAD_ERROR);
         }
-        return (Class<? extends SceneService<?,?>>) targetClass;
+        return (Class<? extends SceneService<?, ?>>) targetClass;
     }
 
 

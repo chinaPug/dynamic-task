@@ -10,5 +10,5 @@ import java.util.concurrent.CompletableFuture;
  * 提交任务到指定线程池并返回结果的能力
  */
 public interface SceneSubmitter {
-    CompletableFuture<Result<?>> execute(Event<?> event, SceneService<?,?> sceneService);
+    CompletableFuture<Result<?>> execute(Event<?> event, SceneService<?, ?> sceneService);
 }

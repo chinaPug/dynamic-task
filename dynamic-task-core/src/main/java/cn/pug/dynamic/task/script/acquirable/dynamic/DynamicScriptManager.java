@@ -8,7 +8,6 @@ import cn.pug.dynamic.task.script.template.model.Event;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
-import java.lang.ref.Reference;
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.SoftReference;
 import java.net.URL;

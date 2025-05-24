@@ -9,5 +9,6 @@ import cn.pug.dynamic.task.script.template.model.Event;
  */
 public interface ScriptManager extends ScriptAcquirable {
     void registerSceneService(Event<?> event);
+
     void unloadSceneService(Event<?> event);
 }

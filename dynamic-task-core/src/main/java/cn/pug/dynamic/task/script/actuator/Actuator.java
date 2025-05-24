@@ -1,9 +1,6 @@
 package cn.pug.dynamic.task.script.actuator;
 
 
-
-
-
 import cn.pug.dynamic.task.script.template.model.Event;
 import cn.pug.dynamic.task.script.template.model.Result;
 
