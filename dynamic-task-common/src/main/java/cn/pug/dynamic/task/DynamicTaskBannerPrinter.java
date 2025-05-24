@@ -18,7 +18,8 @@ public class DynamicTaskBannerPrinter implements InitializingBean {
 
     private static final String NAME = " :: Dynamic Task :: ";
 
-    private static final String BANNER = "\n    ____                              _         ______           __  \n" +
+    private static final String BANNER = "\n" +
+            "     ____                              _         ______           __  \n" +
             "   / __ \\__  ______  ____ _____ ___  (_)____   /_  __/___ ______/ /__\n" +
             "  / / / / / / / __ \\/ __ `/ __ `__ \\/ / ___/    / / / __ `/ ___/ //_/\n" +
             " / /_/ / /_/ / / / / /_/ / / / / / / / /__     / / / /_/ (__  ) ,<   \n" +

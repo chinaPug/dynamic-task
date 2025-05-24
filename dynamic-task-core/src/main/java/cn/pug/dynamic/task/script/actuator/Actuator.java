@@ -11,5 +11,5 @@ import java.util.concurrent.CompletableFuture;
 
 public interface Actuator {
     //入口
-    CompletableFuture<Result> submit(Event event);
+    CompletableFuture<Result<?>> submit(Event<?> event);
 }

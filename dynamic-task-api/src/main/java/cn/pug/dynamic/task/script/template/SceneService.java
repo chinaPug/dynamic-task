@@ -8,14 +8,15 @@ import cn.pug.dynamic.task.script.template.model.TaskCodeMsg;
 import java.util.concurrent.CompletableFuture;
 
 @FunctionalInterface
-public interface SceneService<T,R> extends Scene<Result<?>, Event<?>>{
-    default CompletableFuture<Result<?>> action(Event<?> event) {
+public interface SceneService<T,R> extends Scene {
+
+    default CompletableFuture<Result<?>> action(Event<?> event){
         Result<?> result;
         try {
-            result = Result.success(event.getTaskId(), flow((R) event.getData()));
+            result = Result.success(event.getTaskId(), flow((T)event.getData()));
         } catch (Exception e) {
             if (e instanceof PredicateException) {
-                result = Result.error(event.getTaskId(), ((PredicateException) e).getTaskCodeMsg());
+                result =  Result.error(event.getTaskId(), ((PredicateException) e).getTaskCodeMsg());
             } else {
                 result = Result.error(event.getTaskId(), TaskCodeMsg.UNKNOWN_ERROR);
             }
@@ -23,5 +24,6 @@ public interface SceneService<T,R> extends Scene<Result<?>, Event<?>>{
         return CompletableFuture.completedFuture(result);
     }
 
-    T flow(R data);
+    R flow(T data);
+
 }

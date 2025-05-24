@@ -2,7 +2,7 @@ package cn.pug.dynamic.task.script.acquirable.dynamic;
 
 import cn.pug.dynamic.task.config.DynamicTaskProperties;
 import cn.pug.dynamic.task.script.acquirable.ScriptManager;
-import cn.pug.dynamic.task.script.template.Scene;
+import cn.pug.dynamic.task.script.template.SceneService;
 import cn.pug.dynamic.task.script.template.annotation.Script;
 import cn.pug.dynamic.task.script.template.model.Event;
 import lombok.extern.slf4j.Slf4j;
@@ -16,32 +16,24 @@ import java.util.AbstractMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+
 
 @Slf4j
-public class DynamicScriptAcquirable implements ScriptManager {
-    private final Map<String, SoftReference<Map.Entry<String, Scene>>> sceneMap = new ConcurrentHashMap<>(64);
-    private final ReferenceQueue<Map.Entry<String, Scene>> referenceQueue = new ReferenceQueue<>();
-    private final ScheduledExecutorService cleanupExecutor = Executors.newSingleThreadScheduledExecutor();
-    private DynamicTaskProperties properties;
+public class DynamicScriptManager implements ScriptManager {
+    private final Map<String, SoftReference<Map.Entry<String, SceneService<?,?>>>> sceneMap = new ConcurrentHashMap<>(64);
+    private final ReferenceQueue<Map.Entry<String, SceneService<?,?>>> referenceQueue = new ReferenceQueue<>();
+    private final DynamicTaskProperties properties;
 
-    public DynamicScriptAcquirable(DynamicTaskProperties properties) {
+    public DynamicScriptManager(DynamicTaskProperties properties) {
         this.properties = properties;
-        // Start the cleanup thread
-        startCleanupThread();
     }
 
-    private void startCleanupThread() {
-        cleanupExecutor.scheduleAtFixedRate(this::cleanupReferences, 1, 1, TimeUnit.MINUTES);
-    }
 
     private void cleanupReferences() {
         try {
-            Reference<? extends Map.Entry<String, Scene>> ref;
+            Reference<? extends Map.Entry<String, SceneService<?,?>>> ref;
             while ((ref = referenceQueue.poll()) != null) {
-                final Reference<? extends Map.Entry<String, Scene>> finalRef = ref;
+                final Reference<? extends Map.Entry<String, SceneService<?,?>>> finalRef = ref;
                 // Find and remove the entry from sceneMap
                 sceneMap.entrySet().removeIf(entry -> entry.getValue() == finalRef);
                 log.info("Cleaned up garbage collected scene reference");
@@ -51,21 +43,23 @@ public class DynamicScriptAcquirable implements ScriptManager {
         }
     }
 
-    public Scene getScene(Event event) {
+    public SceneService<?,?> getSceneService(Event<?> event) {
+        // 清除垃圾
+        cleanupReferences();
         String identifyVal = event.getIdentifyVal();
         String scriptVersion = event.getScriptVersion();
         log.info("正在获取场景，标识值：{}，版本：{}", identifyVal, scriptVersion);
         
-        SoftReference<Map.Entry<String, Scene>> ref = sceneMap.get(identifyVal);
-        Map.Entry<String, Scene> entry = ref != null ? ref.get() : null;
+        SoftReference<Map.Entry<String, SceneService<?,?>>> ref = sceneMap.get(identifyVal);
+        Map.Entry<String, SceneService<?,?>> entry = ref != null ? ref.get() : null;
         
         if (entry != null) {
             String currentVersion = entry.getKey();
             switch (scriptVersion.compareTo(currentVersion)) {
                 case 1:
                     log.info("需要更新到新版本，正在卸载旧版本");
-                    unloadScene(event);
-                    registerScene(event);
+                    unloadSceneService(event);
+                    registerSceneService(event);
                     ref = sceneMap.get(identifyVal);
                     entry = ref != null ? ref.get() : null;
                     if (entry == null) {
@@ -80,7 +74,7 @@ public class DynamicScriptAcquirable implements ScriptManager {
             }
         } else {
             log.info("缓存中未找到场景，正在注册新场景");
-            registerScene(event);
+            registerSceneService(event);
             ref = sceneMap.get(identifyVal);
             entry = ref != null ? ref.get() : null;
             if (entry == null) {
@@ -91,7 +85,7 @@ public class DynamicScriptAcquirable implements ScriptManager {
     }
 
     @Override
-    public synchronized void registerScene(Event event) {
+    public synchronized void registerSceneService(Event<?> event) {
         String identifyVal = event.getIdentifyVal();
         String scriptVersion = event.getScriptVersion();
         if (sceneMap.containsKey(identifyVal)) {
@@ -99,8 +93,8 @@ public class DynamicScriptAcquirable implements ScriptManager {
         }
         String jarName = identifyVal + "-" + scriptVersion + ".jar";
         URL jarUrl;
-        Scene scene;
-        Class<? extends Scene> clazz;
+        SceneService<?,?> scene;
+        Class<? extends SceneService<?,?>> clazz = null;
         log.info("正在注册场景，JAR包：{}", jarName);
 
         File localJar = new File(this.properties.getLocalJarPath() + "/" + jarName);
@@ -117,7 +111,6 @@ public class DynamicScriptAcquirable implements ScriptManager {
             try {
                 log.info("本地JAR包不存在，尝试从远程加载");
                 String remotePath = properties.getRemoteJarUrl() + "/" + jarName;
-                clazz = DynamicScriptClassLoader.loadJarFromRemote(remotePath, jarName, properties.getLocalJarPath());
             } catch (Exception e) {
                 log.error("从远程JAR包加载场景失败：{}", jarName, e);
                 throw new RuntimeException("从远程JAR包加载场景失败：" + jarName, e);
@@ -134,27 +127,16 @@ public class DynamicScriptAcquirable implements ScriptManager {
             throw new RuntimeException("实例化场景对象失败：" + clazz.getName(), e);
         }
         
-        Map.Entry<String, Scene> entry = new AbstractMap.SimpleEntry<>(scriptVersion, scene);
+        Map.Entry<String, SceneService<?,?>> entry = new AbstractMap.SimpleEntry<>(scriptVersion, scene);
         sceneMap.put(identifyVal, new SoftReference<>(entry, referenceQueue));
     }
 
     @Override
-    public void unloadScene(Event event) {
+    public void unloadSceneService(Event<?> event) {
         String identifyVal = event.getIdentifyVal();
         log.info("正在卸载场景，标识值：{}", identifyVal);
         sceneMap.remove(identifyVal);
         log.info("场景卸载完成");
     }
 
-    public void shutdown() {
-        cleanupExecutor.shutdown();
-        try {
-            if (!cleanupExecutor.awaitTermination(5, TimeUnit.SECONDS)) {
-                cleanupExecutor.shutdownNow();
-            }
-        } catch (InterruptedException e) {
-            cleanupExecutor.shutdownNow();
-            Thread.currentThread().interrupt();
-        }
-    }
 } 
