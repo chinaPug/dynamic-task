@@ -20,7 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 public class DynamicScriptManager implements ScriptManager {
-    private final Map<String, SoftReference<Map.Entry<String, SceneService<?,?>>>> sceneMap = new ConcurrentHashMap<>(64);
+    private final Map<String, SceneServiceSoftReference> sceneMap = new ConcurrentHashMap<>(64);
     private final ReferenceQueue<Map.Entry<String, SceneService<?,?>>> referenceQueue = new ReferenceQueue<>();
     private final DynamicTaskProperties properties;
 
@@ -31,15 +31,14 @@ public class DynamicScriptManager implements ScriptManager {
 
     private void cleanupReferences() {
         try {
-            Reference<? extends Map.Entry<String, SceneService<?,?>>> ref;
-            while ((ref = referenceQueue.poll()) != null) {
-                final Reference<? extends Map.Entry<String, SceneService<?,?>>> finalRef = ref;
-                // Find and remove the entry from sceneMap
+            SceneServiceSoftReference ref;
+            while ((ref = (SceneServiceSoftReference)referenceQueue.poll()) != null) {
+                final SceneServiceSoftReference finalRef = ref;
                 sceneMap.entrySet().removeIf(entry -> entry.getValue() == finalRef);
-                log.info("Cleaned up garbage collected scene reference");
+                log.info("{}脚本由于内存不足被回收",finalRef.identifyVal);
             }
         } catch (Exception e) {
-            log.error("Error during reference cleanup", e);
+            log.error("脚本回收出现问题", e);
         }
     }
 
@@ -86,6 +85,8 @@ public class DynamicScriptManager implements ScriptManager {
 
     @Override
     public synchronized void registerSceneService(Event<?> event) {
+        // 清除垃圾
+        cleanupReferences();
         String identifyVal = event.getIdentifyVal();
         String scriptVersion = event.getScriptVersion();
         if (sceneMap.containsKey(identifyVal)) {
@@ -128,7 +129,7 @@ public class DynamicScriptManager implements ScriptManager {
         }
         
         Map.Entry<String, SceneService<?,?>> entry = new AbstractMap.SimpleEntry<>(scriptVersion, scene);
-        sceneMap.put(identifyVal, new SoftReference<>(entry, referenceQueue));
+        sceneMap.put(identifyVal, new SceneServiceSoftReference(entry, referenceQueue));
     }
 
     @Override
@@ -139,4 +140,12 @@ public class DynamicScriptManager implements ScriptManager {
         log.info("场景卸载完成");
     }
 
+
+    private static class SceneServiceSoftReference extends SoftReference<Map.Entry<String, SceneService<?,?>>> {
+        private String identifyVal;
+        public SceneServiceSoftReference(Map.Entry<String, SceneService<?,?>> referent, ReferenceQueue<? super Map.Entry<String, SceneService<?,?>>> q) {
+            super(referent, q);
+            identifyVal= new String(referent.getKey());
+        }
+    }
 } 
