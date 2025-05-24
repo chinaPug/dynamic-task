@@ -105,10 +105,18 @@ public class DefaultExecutorManager implements ExecutorManager {
         public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
             log.info("默认拒绝策略");
             //触发拒绝策略的时候，把任务交给默认的线程池来做
-            ExecutorServiceWrapper executorServiceWrapper= executorServiceMap.values().stream().filter(wrapper -> wrapper.executorService.equals(executor)).findFirst().get();
-            Map.Entry<Event<?>, SceneService<?,?>> entry=executorServiceWrapper.getEntry(r);
-            ExecutorServiceWrapper defaultExecutorServiceWrapper=executorServiceMap.get(defaultExecutorName);
-            defaultExecutorServiceWrapper.submit(entry.getKey(),entry.getValue());
+            ExecutorServiceWrapper executorServiceWrapper= executorServiceMap.values().stream().filter(wrapper -> wrapper.executorService.equals(executor)).findFirst().orElse(null);
+            if (executorServiceWrapper==null){
+                log.warn("未找到对应的线程池，可能被卸载");
+            }
+            else {
+                Map.Entry<Event<?>, SceneService<?, ?>> entry = executorServiceWrapper.getEntry(r);
+                Event<?> event=entry.getKey();
+                SceneService<?, ?> sceneService=entry.getValue();
+                ExecutorServiceWrapper defaultExecutorServiceWrapper = executorServiceMap.get(defaultExecutorName);
+                log.info("正在将任务{}提交到默认线程池",event.toString());
+                defaultExecutorServiceWrapper.submit(event, sceneService);
+            }
         }
     }
 
