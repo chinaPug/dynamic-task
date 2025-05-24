@@ -110,7 +110,7 @@ public class DefaultExecutorManager implements ExecutorManager {
                 log.warn("未找到对应的线程池，可能被卸载");
             }
             else {
-                Map.Entry<Event<?>, SceneService<?, ?>> entry = executorServiceWrapper.getEntry(r);
+                Map.Entry<Event<?>, SceneService<?, ?>> entry = executorServiceWrapper.getEntryAndRemove(r);
                 Event<?> event=entry.getKey();
                 SceneService<?, ?> sceneService=entry.getValue();
                 ExecutorServiceWrapper defaultExecutorServiceWrapper = executorServiceMap.get(defaultExecutorName);

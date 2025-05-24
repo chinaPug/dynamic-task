@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 public class ExecutorServiceWrapper {
     final ExecutorService executorService;
     private final String executorServiceName;
-    private final Map<Supplier<Result<?>>,Map.Entry<Event<?>, SceneService<?,?>>> runningMap = new HashMap<>();
+    final Map<Supplier<Result<?>>,Map.Entry<Event<?>, SceneService<?,?>>> runningMap = new HashMap<>();
 
     public ExecutorServiceWrapper(String executorServiceName, ExecutorService executorService) {
         this.executorService = executorService;
@@ -36,7 +36,7 @@ public class ExecutorServiceWrapper {
         return CompletableFuture.supplyAsync(supplier, executorService);
     }
 
-    Map.Entry<Event<?>, SceneService<?,?>> getEntry(Runnable r) {
+    Map.Entry<Event<?>, SceneService<?,?>> getEntryAndRemove(Runnable r) {
         log.info("反射获取Evnet和SceneService");
         Supplier<Result<?>> supplier;
         Class<?>[] classes=CompletableFuture.class.getDeclaredClasses();
@@ -53,7 +53,7 @@ public class ExecutorServiceWrapper {
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
         }
-        return runningMap.get(supplier);
+        return runningMap.remove(supplier);
     }
 
     List<Runnable> shutdownNow() {
