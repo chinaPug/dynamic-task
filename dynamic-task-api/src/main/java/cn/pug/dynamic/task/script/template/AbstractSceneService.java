@@ -9,7 +9,7 @@ import java.util.concurrent.CompletableFuture;
 @Slf4j
 public abstract class AbstractSceneService<T,R> implements SceneService<T,R>{
     @Override
-    public final CompletableFuture<Result<?>> action(Event<?> event){
+    public final Result<?> action(Event<?> event){
         log.info("任务【{}】——开始执行", event.getTaskId());
         SceneService<T,R> sceneService=(input)->{
             R output=flow(input);

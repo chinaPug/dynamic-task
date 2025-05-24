@@ -10,7 +10,7 @@ import java.util.concurrent.CompletableFuture;
 @FunctionalInterface
 public interface SceneService<T,R> extends Scene {
 
-    default CompletableFuture<Result<?>> action(Event<?> event){
+    default Result<?> action(Event<?> event){
         Result<?> result;
         try {
             result = Result.success(event.getTaskId(), flow((T)event.getData()));
@@ -21,7 +21,7 @@ public interface SceneService<T,R> extends Scene {
                 result = Result.error(event.getTaskId(), TaskCodeMsg.UNKNOWN_ERROR);
             }
         }
-        return CompletableFuture.completedFuture(result);
+        return result;
     }
 
     R flow(T data);

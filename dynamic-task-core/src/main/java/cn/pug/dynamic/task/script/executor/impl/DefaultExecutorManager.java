@@ -8,6 +8,8 @@ import cn.pug.dynamic.task.script.template.model.Result;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.annotation.PostConstruct;
+import java.lang.reflect.Field;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -18,7 +20,8 @@ import java.util.stream.Collectors;
 @Slf4j
 public class DefaultExecutorManager implements ExecutorManager {
     private DynamicTaskProperties dynamicTaskProperties;
-    private final Map<String, ExecutorServiceWrapper> executorServiceMap = new ConcurrentHashMap<>();
+    // 线程池名->线程池包装类
+    private final static Map<String, ExecutorServiceWrapper> executorServiceMap = new ConcurrentHashMap<>();
     private final static String defaultExecutorName = "default-dynamic-task-executor";
 
     public DefaultExecutorManager(int corePoolSize, int maximumPoolSize, long keepAliveTime, int queueCapacity, DynamicTaskProperties dynamicTaskProperties) {
@@ -100,9 +103,12 @@ public class DefaultExecutorManager implements ExecutorManager {
 
         @Override
         public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
+            log.info("默认拒绝策略");
             //触发拒绝策略的时候，把任务交给默认的线程池来做
-//            ExecutorServiceWrapper defaultExecutorServiceWrapper=executorServiceMap.get(defaultExecutorName);
-//            defaultExecutorServiceWrapper.submit(event,sceneService);
+            ExecutorServiceWrapper executorServiceWrapper= executorServiceMap.values().stream().filter(wrapper -> wrapper.executorService.equals(executor)).findFirst().get();
+            Map.Entry<Event<?>, SceneService<?,?>> entry=executorServiceWrapper.getEntry(r);
+            ExecutorServiceWrapper defaultExecutorServiceWrapper=executorServiceMap.get(defaultExecutorName);
+            defaultExecutorServiceWrapper.submit(entry.getKey(),entry.getValue());
         }
     }
 
@@ -145,6 +151,8 @@ public class DefaultExecutorManager implements ExecutorManager {
                 return new ThreadPoolExecutor.DiscardPolicy();
             case "DISCARD_OLDEST":
                 return new ThreadPoolExecutor.DiscardOldestPolicy();
+            case "DEFAULT":
+                return new DefaultRejectExecutionHandler();
             default:
                 log.warn("Unknown rejection policy: {}, using default ABORT policy", policy);
                 return new ThreadPoolExecutor.AbortPolicy();
@@ -164,7 +172,7 @@ public class DefaultExecutorManager implements ExecutorManager {
                                     executorConfig.getMaxPoolSize(),
                                     executorConfig.getKeepAliveSeconds(),
                                     TimeUnit.SECONDS,
-                                    new LinkedBlockingQueue<>(executorConfig.getQueueCapacity()),
+                                    executorConfig.getQueueCapacity()==0?new SynchronousQueue<>():new LinkedBlockingQueue<>(executorConfig.getQueueCapacity()),
                                     new DefaultThreadFactory(executorConfig.getName()),
                                     getRejectedExecutionHandler(executorConfig.getTaskRejectedPolicy())
                             )

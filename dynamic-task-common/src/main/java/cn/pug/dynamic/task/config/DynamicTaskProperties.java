@@ -27,6 +27,6 @@ public class DynamicTaskProperties {
         private Integer maxPoolSize;
         private Integer queueCapacity=1000;
         private Integer keepAliveSeconds=60;
-        private String taskRejectedPolicy="CALLER_RUNS";
+        private String taskRejectedPolicy="DEFAULT";
     }
 }

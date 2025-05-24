@@ -7,5 +7,5 @@ import java.util.concurrent.CompletableFuture;
 
 @FunctionalInterface
 public interface Scene {
-    CompletableFuture<Result<?>> action(Event<?> event);
+    Result<?> action(Event<?> event);
 }

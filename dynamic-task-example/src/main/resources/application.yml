@@ -7,15 +7,8 @@ script:
     - name: a
       core-pool-size: 1
       max-pool-size: 1
-      queue-capacity: 100
+      queue-capacity: 0
       keep-alive-seconds: 60
-      task-rejected-policy: CALLER_RUNS
-    - name: b
-      core-pool-size: 1
-      max-pool-size: 1
-      queue-capacity: 100
-      keep-alive-seconds: 60
-      task-rejected-policy: CALLER_RUNS
 
 server:
   port: 8080
