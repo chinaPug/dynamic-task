@@ -20,7 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 public class DynamicScriptManager implements ScriptManager {
     private final Map<String, SceneServiceSoftReference> sceneMap = new ConcurrentHashMap<>(64);
-    private final ReferenceQueue<Map.Entry<String, SceneService<?,?>>> referenceQueue = new ReferenceQueue<>();
+    private final ReferenceQueue<Map.Entry<String, SceneService<?, ?>>> referenceQueue = new ReferenceQueue<>();
     private final DynamicTaskProperties properties;
 
     public DynamicScriptManager(DynamicTaskProperties properties) {
@@ -31,26 +31,26 @@ public class DynamicScriptManager implements ScriptManager {
     private void cleanupReferences() {
         try {
             SceneServiceSoftReference ref;
-            while ((ref = (SceneServiceSoftReference)referenceQueue.poll()) != null) {
+            while ((ref = (SceneServiceSoftReference) referenceQueue.poll()) != null) {
                 final SceneServiceSoftReference finalRef = ref;
                 sceneMap.entrySet().removeIf(entry -> entry.getValue() == finalRef);
-                log.info("{}脚本由于内存不足被回收",finalRef.identifyVal);
+                log.info("{}脚本由于内存不足被回收", finalRef.identifyVal);
             }
         } catch (Exception e) {
             log.error("脚本回收出现问题", e);
         }
     }
 
-    public SceneService<?,?> getSceneService(Event<?> event) {
+    public SceneService<?, ?> getSceneService(Event<?> event) {
         // 清除垃圾
         cleanupReferences();
         String identifyVal = event.getIdentifyVal();
         String scriptVersion = event.getScriptVersion();
         log.info("正在获取场景，标识值：{}，版本：{}", identifyVal, scriptVersion);
-        
-        SoftReference<Map.Entry<String, SceneService<?,?>>> ref = sceneMap.get(identifyVal);
-        Map.Entry<String, SceneService<?,?>> entry = ref != null ? ref.get() : null;
-        
+
+        SoftReference<Map.Entry<String, SceneService<?, ?>>> ref = sceneMap.get(identifyVal);
+        Map.Entry<String, SceneService<?, ?>> entry = ref != null ? ref.get() : null;
+
         if (entry != null) {
             String currentVersion = entry.getKey();
             switch (scriptVersion.compareTo(currentVersion)) {
@@ -93,8 +93,8 @@ public class DynamicScriptManager implements ScriptManager {
         }
         String jarName = identifyVal + "-" + scriptVersion + ".jar";
         URL jarUrl;
-        SceneService<?,?> scene;
-        Class<? extends SceneService<?,?>> clazz = null;
+        SceneService<?, ?> scene;
+        Class<? extends SceneService<?, ?>> clazz = null;
         log.info("正在注册场景，JAR包：{}", jarName);
 
         File localJar = new File(this.properties.getLocalJarPath() + "/" + jarName);
@@ -108,13 +108,7 @@ public class DynamicScriptManager implements ScriptManager {
                 throw new RuntimeException("从本地JAR包加载场景失败：" + jarName, e);
             }
         } else {
-            try {
-                log.info("本地JAR包不存在，尝试从远程加载");
-                String remotePath = properties.getRemoteJarUrl() + "/" + jarName;
-            } catch (Exception e) {
-                log.error("从远程JAR包加载场景失败：{}", jarName, e);
-                throw new RuntimeException("从远程JAR包加载场景失败：" + jarName, e);
-            }
+            throw new RuntimeException("JAR包加载本地不存在：" + jarName);
         }
         try {
             scene = clazz.newInstance();
@@ -126,8 +120,8 @@ public class DynamicScriptManager implements ScriptManager {
             log.error("实例化场景对象失败：{}", clazz.getName(), e);
             throw new RuntimeException("实例化场景对象失败：" + clazz.getName(), e);
         }
-        
-        Map.Entry<String, SceneService<?,?>> entry = new AbstractMap.SimpleEntry<>(scriptVersion, scene);
+
+        Map.Entry<String, SceneService<?, ?>> entry = new AbstractMap.SimpleEntry<>(scriptVersion, scene);
         sceneMap.put(identifyVal, new SceneServiceSoftReference(entry, referenceQueue));
     }
 
@@ -140,11 +134,12 @@ public class DynamicScriptManager implements ScriptManager {
     }
 
 
-    private static class SceneServiceSoftReference extends SoftReference<Map.Entry<String, SceneService<?,?>>> {
+    private static class SceneServiceSoftReference extends SoftReference<Map.Entry<String, SceneService<?, ?>>> {
         private String identifyVal;
-        public SceneServiceSoftReference(Map.Entry<String, SceneService<?,?>> referent, ReferenceQueue<? super Map.Entry<String, SceneService<?,?>>> q) {
+
+        public SceneServiceSoftReference(Map.Entry<String, SceneService<?, ?>> referent, ReferenceQueue<? super Map.Entry<String, SceneService<?, ?>>> q) {
             super(referent, q);
-            identifyVal= new String(referent.getKey());
+            identifyVal = new String(referent.getKey());
         }
     }
 } 

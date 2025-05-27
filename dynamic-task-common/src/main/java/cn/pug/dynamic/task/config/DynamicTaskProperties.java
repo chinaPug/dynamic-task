@@ -15,7 +15,6 @@ import java.util.List;
 @ConfigurationProperties(prefix = DynamicTaskConst.MAIN_PROPERTIES_PREFIX)
 public class DynamicTaskProperties {
     private String localJarPath;
-    private String remoteJarUrl;
     private boolean enable = false;
     private boolean enabledBanner = true;
     private List<ExecutorConfig> executor = new ArrayList<>();

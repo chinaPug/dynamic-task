@@ -48,6 +48,6 @@ public class DynamicTaskAutoConfiguration {
         //获取运行本机的cpu核心数
         int coreNum = Runtime.getRuntime().availableProcessors();
         //任务密集型初始化设置
-        return new DefaultExecutorManager(coreNum, coreNum, 60L, 1000,properties);
+        return new DefaultExecutorManager(properties);
     }
 } 

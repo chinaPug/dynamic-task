@@ -1,9 +1,18 @@
 script:
   enable: true
   local-jar-path: /Users/chinaPug/code/java/script-test/target
-  remote-jar-url: /Users/chinaPug/code/java/script-test/target
   enabled-banner: true
   executor:
+    - name: a
+      core-pool-size: 1
+      max-pool-size: 1
+      queue-capacity: 0
+      keep-alive-seconds: 60
+    - name: a
+      core-pool-size: 1
+      max-pool-size: 1
+      queue-capacity: 0
+      keep-alive-seconds: 60
     - name: a
       core-pool-size: 1
       max-pool-size: 1
