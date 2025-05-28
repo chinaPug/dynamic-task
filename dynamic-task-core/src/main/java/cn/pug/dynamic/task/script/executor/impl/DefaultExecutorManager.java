@@ -28,13 +28,13 @@ public class DefaultExecutorManager implements ExecutorManager {
     }
 
     @Override
-    public void registerExecutor(String executorServiceName, ExecutorService executorService) {
+    public void registerExecutor(String executorServiceName, ThreadPoolExecutor threadPoolExecutor) {
         log.info("正在注册线程池：{}", executorServiceName);
         ExecutorServiceWrapper oldVal=executorServiceMap.putIfAbsent(
                 executorServiceName,
                 new ExecutorServiceWrapper(
                         executorServiceName,
-                        executorService
+                        threadPoolExecutor
                 )
         );
         if (oldVal!=null){

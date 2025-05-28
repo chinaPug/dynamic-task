@@ -4,20 +4,11 @@ script:
   enabled-banner: true
   executor:
     - name: a
-      core-pool-size: 1
-      max-pool-size: 1
+      core-pool-size: 10
+      max-pool-size: 10
       queue-capacity: 0
       keep-alive-seconds: 60
-    - name: a
-      core-pool-size: 1
-      max-pool-size: 1
-      queue-capacity: 0
-      keep-alive-seconds: 60
-    - name: a
-      core-pool-size: 1
-      max-pool-size: 1
-      queue-capacity: 0
-      keep-alive-seconds: 60
+
 
 server:
   port: 8080
