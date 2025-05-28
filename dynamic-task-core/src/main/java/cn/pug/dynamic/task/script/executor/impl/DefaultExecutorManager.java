@@ -8,8 +8,6 @@ import cn.pug.dynamic.task.script.template.model.Result;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.annotation.PostConstruct;
-import java.lang.reflect.Field;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
