@@ -36,25 +36,6 @@ public class ExecutorServiceWrapper {
         return CompletableFuture.supplyAsync(supplier, executorService);
     }
 
-    Map.Entry<Event<?>, SceneService<?,?>> getEntryAndRemove(Runnable r) {
-        log.info("反射获取Evnet和SceneService");
-        Supplier<Result<?>> supplier;
-        Class<?>[] classes=CompletableFuture.class.getDeclaredClasses();
-        Class<?> rClass=Arrays.stream(classes).filter(clazz->clazz.getName().equals("java.util.concurrent.CompletableFuture$AsyncSupply")).findFirst().get();
-        Field field;
-        try {
-            field=rClass.getDeclaredField("fn");
-        } catch (NoSuchFieldException e) {
-            throw new RuntimeException(e);
-        }
-        try {
-            field.setAccessible(true);
-            supplier=(Supplier<Result<?>>)field.get(r);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
-        return runningMap.remove(supplier);
-    }
 
     List<Runnable> shutdownNow() {
         runningInfo();
