@@ -1,11 +1,11 @@
 package cn.pug.dynamic.task.script.template.model;
 
-import lombok.Builder;
-import lombok.Data;
-import lombok.ToString;
+import lombok.*;
 
 @Data
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @ToString
 public class Result<T> {
     protected String taskId;

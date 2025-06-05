@@ -20,6 +20,8 @@ public class DebugController {
     public Result<?> submit(@RequestBody Event<?> event) {
         return actuator.submit(event).join();
     }
-
+    public static void main(String[] args) {
+        ThreadLocal<String> threadLocal = new ThreadLocal<>();
+    }
 
 }
