@@ -1,6 +1,7 @@
 package cn.pug.dynamic.task.script.template.model;
 
-import lombok.*;
+import lombok.Data;
+import lombok.ToString;
 import lombok.experimental.Accessors;
 
 @Data

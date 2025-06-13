@@ -5,7 +5,6 @@ import cn.pug.dynamic.task.constant.TaskCodeMsg;
 import cn.pug.dynamic.task.exception.PredicateException;
 import cn.pug.dynamic.task.script.acquirable.ScriptManager;
 import cn.pug.dynamic.task.script.template.SceneService;
-import cn.pug.dynamic.task.script.template.annotation.Script;
 import cn.pug.dynamic.task.script.template.model.InputWrapper;
 import lombok.extern.slf4j.Slf4j;
 

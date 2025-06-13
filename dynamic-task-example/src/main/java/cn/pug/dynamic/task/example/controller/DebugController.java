@@ -1,10 +1,8 @@
 package cn.pug.dynamic.task.example.controller;
 
 import cn.pug.dynamic.task.script.actuator.Actuator;
-import cn.pug.dynamic.task.script.template.SceneService;
 import cn.pug.dynamic.task.script.template.model.InputWrapper;
 import cn.pug.dynamic.task.script.template.model.OutputWrapper;
-import cn.pug.script.api.entity.Event;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -15,8 +13,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.annotation.PostConstruct;
-import java.util.ServiceLoader;
 import java.util.concurrent.CompletableFuture;
 
 @RestController
@@ -28,10 +24,10 @@ public class DebugController implements ApplicationContextAware {
     private ApplicationContext applicationContext;
 
 
-    @PostMapping("event")
-    public OutputWrapper<?> submit(@RequestBody InputWrapper<Event> inputWrapper) {
-        return actuator.submit(inputWrapper).join();
-    }
+//    @PostMapping("event")
+//    public OutputWrapper<?> submit(@RequestBody InputWrapper<Event> inputWrapper) {
+//        return actuator.submit(inputWrapper).join();
+//    }
 
     @GetMapping("test")
     public CompletableFuture<OutputWrapper<?>> test() {

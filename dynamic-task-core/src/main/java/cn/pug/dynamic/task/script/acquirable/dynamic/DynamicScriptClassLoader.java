@@ -1,6 +1,5 @@
 package cn.pug.dynamic.task.script.acquirable.dynamic;
 
-import cn.pug.dynamic.task.config.DynamicTaskProperties;
 import cn.pug.dynamic.task.constant.TaskCodeMsg;
 import cn.pug.dynamic.task.exception.PredicateException;
 import cn.pug.dynamic.task.script.template.Scene;
