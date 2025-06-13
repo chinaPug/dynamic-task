@@ -1,8 +1,10 @@
 package cn.pug.dynamic.task.example.controller;
 
 import cn.pug.dynamic.task.script.actuator.Actuator;
-import cn.pug.dynamic.task.script.template.model.Event;
-import cn.pug.dynamic.task.script.template.model.Result;
+import cn.pug.dynamic.task.script.template.SceneService;
+import cn.pug.dynamic.task.script.template.model.InputWrapper;
+import cn.pug.dynamic.task.script.template.model.OutputWrapper;
+import cn.pug.script.api.entity.Event;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -13,9 +15,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.annotation.PostConstruct;
+import java.util.ServiceLoader;
 import java.util.concurrent.CompletableFuture;
 
-@RestController(value = "debug")
+@RestController
 public class DebugController implements ApplicationContextAware {
 
     @Autowired
@@ -25,17 +29,17 @@ public class DebugController implements ApplicationContextAware {
 
 
     @PostMapping("event")
-    public Result<?> submit(@RequestBody Event<?> event) {
-        return actuator.submit(event).join();
+    public OutputWrapper<?> submit(@RequestBody InputWrapper<Event> inputWrapper) {
+        return actuator.submit(inputWrapper).join();
     }
 
     @GetMapping("test")
-    public CompletableFuture<Result<?>> test() {
+    public CompletableFuture<OutputWrapper<?>> test() {
         DebugController debugController=applicationContext.getBean(DebugController.class);
         return debugController.service();
     }
     @Async
-    public CompletableFuture<Result<?>> service(){
+    public CompletableFuture<OutputWrapper<?>> service(){
         System.out.println("test"+Thread.currentThread().getName());
         return CompletableFuture.completedFuture(null);
     }

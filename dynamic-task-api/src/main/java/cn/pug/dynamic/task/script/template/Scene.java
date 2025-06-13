@@ -1,11 +1,11 @@
 package cn.pug.dynamic.task.script.template;
 
-import cn.pug.dynamic.task.script.template.model.Event;
-import cn.pug.dynamic.task.script.template.model.Result;
-
-import java.util.concurrent.CompletableFuture;
+import cn.pug.dynamic.task.script.template.model.InputWrapper;
+import cn.pug.dynamic.task.script.template.model.OutputWrapper;
 
 @FunctionalInterface
-public interface Scene {
-    Result<?> action(Event<?> event);
+public interface Scene<T,R> {
+
+    OutputWrapper<R> action(InputWrapper<T> inputWrapper);
+
 }

@@ -1,13 +1,14 @@
 package cn.pug.dynamic.task.script.template.model;
 
 import lombok.*;
+import lombok.experimental.Accessors;
 
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@ToString
-public class Event<T> {
+@Accessors(chain = true)
+public class InputWrapper<T> {
     protected String taskId;
     protected String identifyVal;
     protected String scriptVersion;

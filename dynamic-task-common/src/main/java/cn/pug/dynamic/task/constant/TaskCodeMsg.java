@@ -1,4 +1,4 @@
-package cn.pug.dynamic.task.script.template.model;
+package cn.pug.dynamic.task.constant;
 
 import lombok.Builder;
 import lombok.Data;
@@ -18,4 +18,9 @@ public class TaskCodeMsg implements Serializable {
     public static TaskCodeMsg GET_SCRIPT_ERROR = new TaskCodeMsg(-4, "获取脚本失败");
     public static TaskCodeMsg EVENT_PARAM_ERROR = new TaskCodeMsg(-5, "Event参数不合法");
     public static TaskCodeMsg CLASS_LOAD_ERROR = new TaskCodeMsg(-6, "类加载失败");
-} 
+
+    public static TaskCodeMsg SCRIPT_VERSION_ERROR=new TaskCodeMsg(-7,"所需版本过低，请检查任务是否过期");
+    public static TaskCodeMsg SCRIPT_DEFINITION_ERROR=new TaskCodeMsg(-7,"脚本定义出错，请检查定义是否规范");
+
+
+}

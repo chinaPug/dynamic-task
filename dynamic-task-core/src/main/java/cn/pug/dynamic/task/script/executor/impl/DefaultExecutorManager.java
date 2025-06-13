@@ -3,13 +3,11 @@ package cn.pug.dynamic.task.script.executor.impl;
 import cn.pug.dynamic.task.config.DynamicTaskProperties;
 import cn.pug.dynamic.task.script.executor.ExecutorManager;
 import cn.pug.dynamic.task.script.template.SceneService;
-import cn.pug.dynamic.task.script.template.model.Event;
-import cn.pug.dynamic.task.script.template.model.Result;
+import cn.pug.dynamic.task.script.template.model.InputWrapper;
+import cn.pug.dynamic.task.script.template.model.OutputWrapper;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.annotation.PostConstruct;
-import java.lang.reflect.Field;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -22,19 +20,8 @@ public class DefaultExecutorManager implements ExecutorManager {
     private DynamicTaskProperties dynamicTaskProperties;
     // 线程池名->线程池包装类
     private final static Map<String, ExecutorServiceWrapper> executorServiceMap = new ConcurrentHashMap<>();
-    private final static String defaultExecutorName = "default-dynamic-task-executor";
 
-    public DefaultExecutorManager(int corePoolSize, int maximumPoolSize, long keepAliveTime, int queueCapacity, DynamicTaskProperties dynamicTaskProperties) {
-        ExecutorService defaultExecutorService = new ThreadPoolExecutor(
-                corePoolSize,
-                maximumPoolSize,
-                keepAliveTime,
-                TimeUnit.SECONDS,
-                new LinkedBlockingQueue<>(queueCapacity),
-                new DefaultThreadFactory(defaultExecutorName.concat("-")),
-                new ThreadPoolExecutor.AbortPolicy()
-        );
-        registerExecutor(defaultExecutorName, defaultExecutorService);
+    public DefaultExecutorManager(DynamicTaskProperties dynamicTaskProperties) {
         this.dynamicTaskProperties = dynamicTaskProperties;
     }
 
@@ -67,58 +54,33 @@ public class DefaultExecutorManager implements ExecutorManager {
     /**
      * 默认是随机选择线程池
      *
-     * @param event
+     * @param inputWrapper
      * @return
      */
     @Override
-    public ExecutorServiceWrapper choose(Event<?> event) {
+    public ExecutorServiceWrapper choose(InputWrapper<?> inputWrapper) {
         String chooseExecutorServiceName;
-        // 移除默认线程池后随机选择线程池
-        if (executorServiceMap.size() == 1) {
-            chooseExecutorServiceName = defaultExecutorName;
-        } else {
-            chooseExecutorServiceName = executorServiceMap.keySet().stream().filter(name -> !name.equals(defaultExecutorName)).collect(Collectors.collectingAndThen(
-                    Collectors.toList(),
-                    list -> list.get(new Random().nextInt(list.size()))
-            ));
-        }
+        chooseExecutorServiceName = executorServiceMap.keySet().stream().collect(Collectors.collectingAndThen(
+                Collectors.toList(),
+                list -> list.get(new Random().nextInt(list.size()))
+        ));
         // 这里是防止并发时线程池被注销，从而获取失败的情况。获取失败时，默认线程池被选择
-        return executorServiceMap.getOrDefault(chooseExecutorServiceName, executorServiceMap.get(defaultExecutorName));
+        return executorServiceMap.get(chooseExecutorServiceName);
     }
 
     /**
      * 将生产资料和制作方式提交到线程池运行，并异步返回结果
      *
-     * @param event
+     * @param inputWrapper
      * @param sceneService
      * @return
      */
     @Override
-    public CompletableFuture<Result<?>> execute(Event<?> event, SceneService<?, ?> sceneService) {
-        ExecutorServiceWrapper executorServiceWrapper = choose(event);
-        return executorServiceWrapper.submit(event, sceneService);
+    public CompletableFuture<OutputWrapper<?>> execute(InputWrapper<?> inputWrapper, SceneService<?, ?> sceneService) {
+        ExecutorServiceWrapper executorServiceWrapper = choose(inputWrapper);
+        return executorServiceWrapper.submit(inputWrapper, sceneService);
     }
 
-    static class DefaultRejectExecutionHandler implements RejectedExecutionHandler {
-
-        @Override
-        public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
-            log.info("默认拒绝策略");
-            //触发拒绝策略的时候，把任务交给默认的线程池来做
-            ExecutorServiceWrapper executorServiceWrapper= executorServiceMap.values().stream().filter(wrapper -> wrapper.executorService.equals(executor)).findFirst().orElse(null);
-            if (executorServiceWrapper==null){
-                log.warn("未找到对应的线程池，可能被卸载");
-            }
-            else {
-                Map.Entry<Event<?>, SceneService<?, ?>> entry = executorServiceWrapper.getEntryAndRemove(r);
-                Event<?> event=entry.getKey();
-                SceneService<?, ?> sceneService=entry.getValue();
-                ExecutorServiceWrapper defaultExecutorServiceWrapper = executorServiceMap.get(defaultExecutorName);
-                log.info("正在将任务{}提交到默认线程池",event.toString());
-                defaultExecutorServiceWrapper.submit(event, sceneService);
-            }
-        }
-    }
 
 
     static class DefaultThreadFactory implements ThreadFactory {
@@ -159,10 +121,8 @@ public class DefaultExecutorManager implements ExecutorManager {
                 return new ThreadPoolExecutor.DiscardPolicy();
             case "DISCARD_OLDEST":
                 return new ThreadPoolExecutor.DiscardOldestPolicy();
-            case "DEFAULT":
-                return new DefaultRejectExecutionHandler();
             default:
-                log.warn("Unknown rejection policy: {}, using default ABORT policy", policy);
+                log.warn("未知拒绝策略或者未设置拒绝策略: {}, 使用默认拒绝策略： ABORT policy", policy);
                 return new ThreadPoolExecutor.AbortPolicy();
         }
     }

@@ -1,12 +1,13 @@
 package cn.pug.dynamic.task.script.actuator.impl;
 
+import cn.pug.dynamic.task.constant.TaskCodeMsg;
+import cn.pug.dynamic.task.exception.PredicateException;
 import cn.pug.dynamic.task.script.acquirable.ScriptAcquirable;
 import cn.pug.dynamic.task.script.actuator.Actuator;
 import cn.pug.dynamic.task.script.executor.ExecutorManager;
 import cn.pug.dynamic.task.script.template.SceneService;
-import cn.pug.dynamic.task.script.template.model.Event;
-import cn.pug.dynamic.task.script.template.model.Result;
-import cn.pug.dynamic.task.script.template.model.TaskCodeMsg;
+import cn.pug.dynamic.task.script.template.model.InputWrapper;
+import cn.pug.dynamic.task.script.template.model.OutputWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -23,47 +24,47 @@ public final class DefaultActuatorImpl implements Actuator {
         this.executorManager = executorManager;
     }
 
-    public boolean isValidEvent(Event event) {
-        return !(event.getTaskId() == null || event.getTaskId().isEmpty()
-                || event.getIdentifyVal() == null || event.getIdentifyVal().isEmpty()
-                || event.getScriptVersion() == null || event.getScriptVersion().isEmpty());
+    public boolean isValidEvent(InputWrapper inputWrapper) {
+        return !(inputWrapper.getTaskId() == null || inputWrapper.getTaskId().isEmpty()
+                || inputWrapper.getIdentifyVal() == null || inputWrapper.getIdentifyVal().isEmpty()
+                || inputWrapper.getScriptVersion() == null || inputWrapper.getScriptVersion().isEmpty());
     }
 
     /**
      * 提交入口
      *
-     * @param event
+     * @param inputWrapper
      * @return
      */
     @Override
-    public CompletableFuture<Result<?>> submit(Event<?> event) {
+    public CompletableFuture<OutputWrapper<?>> submit(InputWrapper<?> inputWrapper) {
         /*Event检验**/
-        if (event == null) {
+        if (inputWrapper == null) {
             log.error("任务【{}】——event为null", "null");
-            return CompletableFuture.completedFuture(Result.error("null", TaskCodeMsg.EVENT_IS_NULL));
+            throw new PredicateException(TaskCodeMsg.EVENT_IS_NULL);
         }
-        if (!isValidEvent(event)) {
-            log.error("任务【{}】——输入参数不合法", event.getTaskId() == null ? "null" : event.getTaskId());
-            return CompletableFuture.completedFuture(Result.error(event.getTaskId() == null ? "null" : event.getTaskId(), TaskCodeMsg.EVENT_PARAM_ERROR));
+        if (!isValidEvent(inputWrapper)) {
+            log.error("任务【{}】——输入参数不合法", inputWrapper.getTaskId() == null ? "null" : inputWrapper.getTaskId());
+            throw new PredicateException(TaskCodeMsg.EVENT_PARAM_ERROR);
         }
         /**/
 
         /*获取Scene实例**/
         SceneService<?, ?> sceneService;
         try {
-            sceneService = scriptAcquirable.getSceneService(event);
+            sceneService = scriptAcquirable.getSceneService(inputWrapper);
             ;
         } catch (Exception e) {
-            log.error("任务【{}】——获取Scene执行异常", event.getTaskId(), e);
-            return CompletableFuture.completedFuture(Result.error(event.getTaskId(), TaskCodeMsg.GET_SCRIPT_ERROR));
+            log.error("任务【{}】——获取Scene执行异常", inputWrapper.getTaskId(), e);
+            throw new PredicateException(TaskCodeMsg.GET_SCRIPT_ERROR);
         }
         /**/
 
         /*提交到线程池，并返回结果**/
-        CompletableFuture<? extends Result<?>> completableFuture = executorManager.execute(event, sceneService);
+        CompletableFuture<? extends OutputWrapper<?>> completableFuture = executorManager.execute(inputWrapper, sceneService);
         return completableFuture.handle((result, e) -> {
             if (e != null) {
-                log.error("任务【{}】——action函数执行异常", event.getTaskId(), e);
+                log.error("任务【{}】——action函数执行异常", inputWrapper.getTaskId(), e);
             }
             return result;
         });

@@ -8,13 +8,16 @@ import cn.pug.dynamic.task.script.actuator.Actuator;
 import cn.pug.dynamic.task.script.actuator.impl.DefaultActuatorImpl;
 import cn.pug.dynamic.task.script.executor.ExecutorManager;
 import cn.pug.dynamic.task.script.executor.impl.DefaultExecutorManager;
+import cn.pug.dynamic.task.script.template.SceneService;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
+import java.util.ServiceLoader;
 
 @Configuration
 @EnableConfigurationProperties(DynamicTaskProperties.class)
@@ -45,9 +48,6 @@ public class DynamicTaskAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(ExecutorManager.class)
     public ExecutorManager executorManager() {
-        //获取运行本机的cpu核心数
-        int coreNum = Runtime.getRuntime().availableProcessors();
-        //任务密集型初始化设置
-        return new DefaultExecutorManager(coreNum, coreNum, 60L, 1000,properties);
+        return new DefaultExecutorManager(properties);
     }
 } 

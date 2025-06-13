@@ -1,29 +1,31 @@
 package cn.pug.dynamic.task.script.template;
 
-import cn.pug.dynamic.task.script.template.exception.PredicateException;
-import cn.pug.dynamic.task.script.template.model.Event;
-import cn.pug.dynamic.task.script.template.model.Result;
-import cn.pug.dynamic.task.script.template.model.TaskCodeMsg;
+import cn.pug.dynamic.task.script.template.model.InputWrapper;
+import cn.pug.dynamic.task.script.template.model.OutputWrapper;
+import lombok.extern.slf4j.Slf4j;
 
-import java.util.concurrent.CompletableFuture;
+/**
+ *
+ * @param <T> 定制化模板入参
+ * @param <R> 定制化模板出参
+ */
+@Slf4j
+public abstract class SceneService<T,R> implements Scene<T,R>{
 
-@FunctionalInterface
-public interface SceneService<T,R> extends Scene {
-
-    default Result<?> action(Event<?> event){
-        Result<?> result;
-        try {
-            result = Result.success(event.getTaskId(), flow((T)event.getData()));
-        } catch (Exception e) {
-            if (e instanceof PredicateException) {
-                result =  Result.error(event.getTaskId(), ((PredicateException) e).getTaskCodeMsg());
-            } else {
-                result = Result.error(event.getTaskId(), TaskCodeMsg.UNKNOWN_ERROR);
-            }
-        }
-        return result;
+    /**
+     * 框架的处理逻辑
+     * @param inputWrapper
+     * @return
+     */
+    @Override
+    public final OutputWrapper<R> action(InputWrapper<T> inputWrapper){
+        return new OutputWrapper<R>(inputWrapper,todo(inputWrapper.getData()));
     }
 
-    R flow(T data);
-
+    /**
+     * 定制化模板处理逻辑
+     * @param data
+     * @return
+     */
+    abstract public R todo(T data);
 }

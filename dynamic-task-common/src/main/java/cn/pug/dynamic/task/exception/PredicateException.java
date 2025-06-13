@@ -1,7 +1,6 @@
-package cn.pug.dynamic.task.script.template.exception;
+package cn.pug.dynamic.task.exception;
 
-
-import cn.pug.dynamic.task.script.template.model.TaskCodeMsg;
+import cn.pug.dynamic.task.constant.TaskCodeMsg;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
