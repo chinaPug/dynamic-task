@@ -2,37 +2,121 @@
   "groups": [
     {
       "name": "script",
-      "type": "cn.pug.dynamic.task.config.DynamicTaskProperties",
-      "sourceType": "cn.pug.dynamic.task.config.DynamicTaskProperties"
+      "type": "cn.pug.dynamic.task.core.DynamicTaskProperties",
+      "sourceType": "cn.pug.dynamic.task.core.DynamicTaskProperties",
+      "description": "Dynamic Task Framework configuration group for managing script execution and plugin lifecycle."
     }
   ],
   "properties": [
     {
       "name": "script.enable",
       "type": "java.lang.Boolean",
-      "description": "Whether to enable dynamic task framework.",
-      "sourceType": "cn.pug.dynamic.task.config.DynamicTaskProperties",
+      "description": "Whether to enable the Dynamic Task Framework. When enabled, the framework will initialize plugin management, class loaders, and task execution capabilities.",
+      "sourceType": "cn.pug.dynamic.task.core.DynamicTaskProperties",
       "defaultValue": false
     },
     {
       "name": "script.local-jar-path",
       "type": "java.lang.String",
-      "description": "Local path for script JAR files.",
-      "sourceType": "cn.pug.dynamic.task.config.DynamicTaskProperties"
-    },
-    {
-      "name": "script.remote-jar-url",
-      "type": "java.lang.String",
-      "description": "Remote URL for script JAR files.",
-      "sourceType": "cn.pug.dynamic.task.config.DynamicTaskProperties"
+      "description": "Local file system path where plugin JAR files are stored. The framework will scan this directory for available plugins. Example: '/opt/dynamic-task/plugins' or 'classpath:plugins/'",
+      "sourceType": "cn.pug.dynamic.task.core.DynamicTaskProperties",
+      "defaultValue": null
     },
     {
       "name": "script.enabled-banner",
       "type": "java.lang.Boolean",
-      "description": "Whether to enable startup banner.",
-      "sourceType": "cn.pug.dynamic.task.config.DynamicTaskProperties",
+      "description": "Whether to display the Dynamic Task Framework startup banner in console logs. Useful for debugging and monitoring framework initialization.",
+      "sourceType": "cn.pug.dynamic.task.core.DynamicTaskProperties",
       "defaultValue": true
+    },
+    {
+      "name": "script.executor",
+      "type": "java.util.List<cn.pug.dynamic.task.config.DynamicTaskProperties$ExecutorConfig>",
+      "description": "List of executor configurations for task execution thread pools.",
+      "sourceType": "cn.pug.dynamic.task.core.DynamicTaskProperties"
+    },
+    {
+      "name": "script.executor[].name",
+      "type": "java.lang.String",
+      "description": "Name identifier for the executor configuration.",
+      "sourceType": "cn.pug.dynamic.task.core.DynamicTaskProperties$ExecutorConfig"
+    },
+    {
+      "name": "script.executor[].core-pool-size",
+      "type": "java.lang.Integer",
+      "description": "Core number of threads to keep in the pool, even if they are idle.",
+      "sourceType": "cn.pug.dynamic.task.core.DynamicTaskProperties$ExecutorConfig"
+    },
+    {
+      "name": "script.executor[].max-pool-size",
+      "type": "java.lang.Integer",
+      "description": "Maximum number of threads to allow in the pool.",
+      "sourceType": "cn.pug.dynamic.task.core.DynamicTaskProperties$ExecutorConfig"
+    },
+    {
+      "name": "script.executor[].queue-capacity",
+      "type": "java.lang.Integer",
+      "description": "Capacity of the queue used for holding tasks before they are executed.",
+      "sourceType": "cn.pug.dynamic.task.core.DynamicTaskProperties$ExecutorConfig",
+      "defaultValue": 1000
+    },
+    {
+      "name": "script.executor[].keep-alive-seconds",
+      "type": "java.lang.Integer",
+      "description": "When the number of threads is greater than the core, this is the maximum time that excess idle threads will wait for new tasks before terminating.",
+      "sourceType": "cn.pug.dynamic.task.core.DynamicTaskProperties$ExecutorConfig",
+      "defaultValue": 60
+    },
+    {
+      "name": "script.executor[].task-rejected-policy",
+      "type": "java.lang.String",
+      "description": "Policy to apply when execution is blocked because the thread bounds and queue capacities are reached.",
+      "sourceType": "cn.pug.dynamic.task.core.DynamicTaskProperties$ExecutorConfig",
+      "defaultValue": "DEFAULT"
     }
   ],
-  "hints": []
+  "hints": [
+    {
+      "name": "script.local-jar-path",
+      "values": [
+        {
+          "value": "classpath:plugins/",
+          "description": "Load plugins from classpath resources"
+        },
+        {
+          "value": "/opt/dynamic-task/plugins",
+          "description": "Load plugins from absolute file system path"
+        },
+        {
+          "value": "./plugins",
+          "description": "Load plugins from relative path"
+        }
+      ]
+    },
+    {
+      "name": "script.executor[].task-rejected-policy",
+      "values": [
+        {
+          "value": "DEFAULT",
+          "description": "Default rejection policy"
+        },
+        {
+          "value": "ABORT",
+          "description": "Abort policy - throws RejectedExecutionException"
+        },
+        {
+          "value": "CALLER_RUNS",
+          "description": "Caller runs policy - executes in caller thread"
+        },
+        {
+          "value": "DISCARD",
+          "description": "Discard policy - silently discards the task"
+        },
+        {
+          "value": "DISCARD_OLDEST",
+          "description": "Discard oldest policy - discards the oldest unhandled request"
+        }
+      ]
+    }
+  ]
 } 

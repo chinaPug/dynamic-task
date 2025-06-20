@@ -14,7 +14,6 @@
         <module>dynamic-task-core</module>
         <module>dynamic-task-starter</module>
         <module>dynamic-task-example</module>
-        <module>dynamic-task-common</module>
     </modules>
 
     <properties>

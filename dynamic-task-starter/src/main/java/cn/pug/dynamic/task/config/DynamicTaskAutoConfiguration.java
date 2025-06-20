@@ -1,13 +1,15 @@
 package cn.pug.dynamic.task.config;
 
-import cn.pug.dynamic.task.DynamicTaskBannerPrinter;
-import cn.pug.dynamic.task.constant.DynamicTaskConst;
-import cn.pug.dynamic.task.script.acquirable.ScriptAcquirable;
-import cn.pug.dynamic.task.script.acquirable.dynamic.DynamicScriptManager;
-import cn.pug.dynamic.task.script.actuator.Actuator;
-import cn.pug.dynamic.task.script.actuator.impl.DefaultActuatorImpl;
-import cn.pug.dynamic.task.script.executor.ExecutorManager;
-import cn.pug.dynamic.task.script.executor.impl.DefaultExecutorManager;
+import cn.pug.dynamic.task.core.DynamicTaskBannerPrinter;
+import cn.pug.dynamic.task.core.DynamicTaskProperties;
+import cn.pug.dynamic.task.core.constant.DynamicTaskConst;
+import cn.pug.dynamic.task.core.acquirable.ScriptAcquirable;
+import cn.pug.dynamic.task.core.acquirable.dynamic.DynamicScriptManager;
+import cn.pug.dynamic.task.core.actuator.Actuator;
+import cn.pug.dynamic.task.core.actuator.impl.DefaultActuatorImpl;
+import cn.pug.dynamic.task.core.executor.ExecutorManager;
+import cn.pug.dynamic.task.core.executor.impl.DefaultExecutorManager;
+import cn.pug.dynamic.task.core.executor.logging.ThreadInputFileAppender;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -45,9 +47,9 @@ public class DynamicTaskAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(ExecutorManager.class)
     public ExecutorManager executorManager() {
-        //获取运行本机的cpu核心数
-        int coreNum = Runtime.getRuntime().availableProcessors();
-        //任务密集型初始化设置
         return new DefaultExecutorManager(properties);
     }
+
+    @Bean
+    public ThreadInputFileAppender threadInputFileAppender(){return new ThreadInputFileAppender(properties);}
 } 

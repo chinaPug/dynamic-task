@@ -2,13 +2,21 @@ script:
   enable: true
   local-jar-path: /Users/chinaPug/code/java/script-test/target
   enabled-banner: true
+  log-config:
+    log-dir: "logs/dynamic-task"
+    pattern: "%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%file-%line] - Msg:%msg%n"
+    debug: true
   executor:
     - name: a
       core-pool-size: 10
       max-pool-size: 10
-      queue-capacity: 0
+      queue-capacity: 10
       keep-alive-seconds: 60
-
+    - name: b
+      core-pool-size: 10
+      max-pool-size: 10
+      queue-capacity: 10
+      keep-alive-seconds: 60
 
 server:
   port: 8080
