@@ -9,6 +9,8 @@ import cn.pug.dynamic.task.core.actuator.Actuator;
 import cn.pug.dynamic.task.core.actuator.impl.DefaultActuatorImpl;
 import cn.pug.dynamic.task.core.executor.ExecutorManager;
 import cn.pug.dynamic.task.core.executor.impl.DefaultExecutorManager;
+import cn.pug.dynamic.task.core.executor.logging.LogAdvicePublisher;
+import cn.pug.dynamic.task.core.executor.logging.LogContext;
 import cn.pug.dynamic.task.core.executor.logging.ThreadInputFileAppender;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -52,4 +54,15 @@ public class DynamicTaskAutoConfiguration {
 
     @Bean
     public ThreadInputFileAppender threadInputFileAppender(){return new ThreadInputFileAppender(properties);}
+
+    @Bean
+    public LogAdvicePublisher logAdvicePublisher(){
+        return new LogAdvicePublisher();
+    }
+
+
+    @Bean
+    LogContext logContext(LogAdvicePublisher logAdvicePublisher) {
+        return new LogContext(logAdvicePublisher);
+    }
 } 

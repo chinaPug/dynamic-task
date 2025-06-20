@@ -1,14 +1,22 @@
 package cn.pug.dynamic.task.core.executor.logging;
 
+import cn.hutool.core.io.FileUtil;
 import cn.pug.dynamic.task.common.api.model.InputWrapper;
 import com.alibaba.ttl.TransmittableThreadLocal;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 
+import java.io.File;
+
 @Slf4j
 public class LogContext {
     static final String TASK_ID_PARAM_KEY = "taskId-identifyVal";
     static final String LOG_GROUP_KEY = "log-group";
+    private static LogAdvicePublisher logAdvicePublisher;
+
+    public LogContext(LogAdvicePublisher logAdvicePublisher){
+        LogContext.logAdvicePublisher=logAdvicePublisher;
+    }
 
     private static final TransmittableThreadLocal<InputWrapper<?>> INPUT_WRAPPER_HODLER=new TransmittableThreadLocal<>();
 
@@ -37,6 +45,7 @@ public class LogContext {
      * 清除日志上下文
      */
     public static void clear() {
+        LogContext.logAdvicePublisher.new LogAdviceEvent(FileUtil.getAbsolutePath(getLogFileName())).publish();
         INPUT_WRAPPER_HODLER.remove();
         // 清除MDC
         MDC.remove(TASK_ID_PARAM_KEY);
