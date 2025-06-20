@@ -1,6 +1,7 @@
-package cn.pug.dynamic.task.core.config;
+package cn.pug.dynamic.task.config;
 
 import cn.pug.dynamic.task.core.DynamicTaskBannerPrinter;
+import cn.pug.dynamic.task.core.DynamicTaskProperties;
 import cn.pug.dynamic.task.core.constant.DynamicTaskConst;
 import cn.pug.dynamic.task.core.acquirable.ScriptAcquirable;
 import cn.pug.dynamic.task.core.acquirable.dynamic.DynamicScriptManager;
@@ -8,6 +9,7 @@ import cn.pug.dynamic.task.core.actuator.Actuator;
 import cn.pug.dynamic.task.core.actuator.impl.DefaultActuatorImpl;
 import cn.pug.dynamic.task.core.executor.ExecutorManager;
 import cn.pug.dynamic.task.core.executor.impl.DefaultExecutorManager;
+import cn.pug.dynamic.task.core.executor.logging.ThreadInputFileAppender;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -47,4 +49,7 @@ public class DynamicTaskAutoConfiguration {
     public ExecutorManager executorManager() {
         return new DefaultExecutorManager(properties);
     }
+
+    @Bean
+    public ThreadInputFileAppender threadInputFileAppender(){return new ThreadInputFileAppender(properties);}
 } 

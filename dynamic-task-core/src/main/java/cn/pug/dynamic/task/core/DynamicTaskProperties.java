@@ -1,4 +1,4 @@
-package cn.pug.dynamic.task.core.config;
+package cn.pug.dynamic.task.core;
 
 import cn.pug.dynamic.task.core.constant.DynamicTaskConst;
 import lombok.Data;
@@ -18,7 +18,7 @@ public class DynamicTaskProperties {
     private boolean enable = false;
     private boolean enabledBanner = true;
     private List<ExecutorConfig> executor = new ArrayList<>();
-
+    private LogConfig logConfig;
     @Data
     public static class ExecutorConfig {
         private String name;
@@ -27,5 +27,11 @@ public class DynamicTaskProperties {
         private Integer queueCapacity=1000;
         private Integer keepAliveSeconds=60;
         private String taskRejectedPolicy="DEFAULT";
+    }
+
+    @Data
+    public static class LogConfig{
+        private String logDir="logs/dynamic-task";
+        private String pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n[File:%file Line:%line]%n";
     }
 }

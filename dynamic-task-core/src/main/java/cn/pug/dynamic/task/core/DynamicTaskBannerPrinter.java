@@ -1,6 +1,5 @@
 package cn.pug.dynamic.task.core;
 
-import cn.pug.dynamic.task.core.config.DynamicTaskProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.ansi.AnsiColor;

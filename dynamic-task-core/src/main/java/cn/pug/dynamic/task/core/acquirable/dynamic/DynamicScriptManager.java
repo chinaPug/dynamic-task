@@ -1,6 +1,6 @@
 package cn.pug.dynamic.task.core.acquirable.dynamic;
 
-import cn.pug.dynamic.task.core.config.DynamicTaskProperties;
+import cn.pug.dynamic.task.core.DynamicTaskProperties;
 import cn.pug.dynamic.task.core.constant.TaskCodeMsg;
 import cn.pug.dynamic.task.core.exception.PredicateException;
 import cn.pug.dynamic.task.core.acquirable.ScriptManager;
@@ -43,6 +43,7 @@ public class DynamicScriptManager implements ScriptManager {
         }
     }
 
+    @Override
     public SceneService<?,?> getSceneService(InputWrapper<?> inputWrapper) {
         // 清除垃圾
         cleanupReferences();

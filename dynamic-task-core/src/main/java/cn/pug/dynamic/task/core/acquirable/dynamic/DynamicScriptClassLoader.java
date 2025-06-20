@@ -42,7 +42,7 @@ public class DynamicScriptClassLoader extends URLClassLoader {
                                 throw new IOException("读取类文件不完整: " + entry.getName());
                             }
                             // 获取类名
-                            String className = classLoader.getClassName(entry.getName());
+                            String className = DynamicScriptClassLoader.getClassName(entry.getName());
                             log.debug("尝试加载类: " + className);
                             // 定义类到 JVM 中
                             Class<?> clazz;

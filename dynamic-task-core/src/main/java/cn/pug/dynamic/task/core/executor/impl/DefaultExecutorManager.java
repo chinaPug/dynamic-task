@@ -1,11 +1,12 @@
 package cn.pug.dynamic.task.core.executor.impl;
 
-import cn.pug.dynamic.task.core.config.DynamicTaskProperties;
+import cn.pug.dynamic.task.core.DynamicTaskProperties;
 import cn.pug.dynamic.task.core.executor.ExecutorManager;
 import cn.pug.dynamic.task.common.api.SceneService;
 import cn.pug.dynamic.task.common.api.model.InputWrapper;
 import cn.pug.dynamic.task.common.api.model.OutputWrapper;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import javax.annotation.PostConstruct;
 import java.util.List;
@@ -17,35 +18,35 @@ import java.util.stream.Collectors;
 
 @Slf4j
 public class DefaultExecutorManager implements ExecutorManager {
-    private DynamicTaskProperties dynamicTaskProperties;
+    private final DynamicTaskProperties dynamicTaskProperties;
     // 线程池名->线程池包装类
-    private final static Map<String, ExecutorServiceWrapper> executorServiceMap = new ConcurrentHashMap<>();
+    private final static Map<String, ExecutorServiceWrapper> executorMap = new ConcurrentHashMap<>();
 
     public DefaultExecutorManager(DynamicTaskProperties dynamicTaskProperties) {
         this.dynamicTaskProperties = dynamicTaskProperties;
     }
 
     @Override
-    public void registerExecutor(String executorServiceName, ExecutorService executorService) {
-        log.info("正在注册线程池：{}", executorServiceName);
-        executorServiceMap.put(
-                executorServiceName,
+    public void registerExecutor(String threadPoolTaskExecutorName, ThreadPoolTaskExecutor threadPoolTaskExecutor) {
+        log.info("正在注册线程池：{}", threadPoolTaskExecutorName);
+        executorMap.put(
+                threadPoolTaskExecutorName,
                 new ExecutorServiceWrapper(
-                        executorServiceName,
-                        executorService
+                        threadPoolTaskExecutorName,
+                        threadPoolTaskExecutor
                 )
         );
     }
 
     @Override
-    public void unregisterExecutor(String executorServiceName, boolean shutdownNow) {
-        log.info("正在注销线程池：{}", executorServiceName);
-        ExecutorServiceWrapper executorServiceWrapper = executorServiceMap.remove(executorServiceName);
+    public void unregisterExecutor(String threadPoolTaskExecutorName, boolean shutdownNow) {
+        log.info("正在注销线程池：{}", threadPoolTaskExecutorName);
+        ExecutorServiceWrapper executorServiceWrapper = executorMap.remove(threadPoolTaskExecutorName);
         if (shutdownNow) {
-            log.info("正在立即关闭线程池：{}", executorServiceName);
+            log.info("正在立即关闭线程池：{}", threadPoolTaskExecutorName);
             executorServiceWrapper.shutdownNow();
         } else {
-            log.info("全部任务执行完后，关闭线程池：{}", executorServiceName);
+            log.info("全部任务执行完后，关闭线程池：{}", threadPoolTaskExecutorName);
             executorServiceWrapper.shutdown();
         }
     }
@@ -59,22 +60,16 @@ public class DefaultExecutorManager implements ExecutorManager {
      */
     @Override
     public ExecutorServiceWrapper choose(InputWrapper<?> inputWrapper) {
-        String chooseExecutorServiceName;
-        chooseExecutorServiceName = executorServiceMap.keySet().stream().collect(Collectors.collectingAndThen(
+        String chooseThreadPoolTaskExecutorName;
+        chooseThreadPoolTaskExecutorName = executorMap.keySet().stream().collect(Collectors.collectingAndThen(
                 Collectors.toList(),
                 list -> list.get(new Random().nextInt(list.size()))
         ));
         // 这里是防止并发时线程池被注销，从而获取失败的情况。获取失败时，默认线程池被选择
-        return executorServiceMap.get(chooseExecutorServiceName);
+        return executorMap.get(chooseThreadPoolTaskExecutorName);
     }
 
-    /**
-     * 将生产资料和制作方式提交到线程池运行，并异步返回结果
-     *
-     * @param inputWrapper
-     * @param sceneService
-     * @return
-     */
+
     @Override
     public CompletableFuture<OutputWrapper<?>> execute(InputWrapper<?> inputWrapper, SceneService<?, ?> sceneService) {
         ExecutorServiceWrapper executorServiceWrapper = choose(inputWrapper);
@@ -135,12 +130,11 @@ public class DefaultExecutorManager implements ExecutorManager {
                 executorConfig -> {
                     registerExecutor(
                             executorConfig.getName(),
-                            new ThreadPoolExecutor(
+                            new ThreadPoolTaskExecutorMdcWrapper(
                                     executorConfig.getCorePoolSize(),
                                     executorConfig.getMaxPoolSize(),
                                     executorConfig.getKeepAliveSeconds(),
-                                    TimeUnit.SECONDS,
-                                    executorConfig.getQueueCapacity()==0?new SynchronousQueue<>():new LinkedBlockingQueue<>(executorConfig.getQueueCapacity()),
+                                    executorConfig.getQueueCapacity(),
                                     new DefaultThreadFactory(executorConfig.getName()),
                                     getRejectedExecutionHandler(executorConfig.getTaskRejectedPolicy())
                             )

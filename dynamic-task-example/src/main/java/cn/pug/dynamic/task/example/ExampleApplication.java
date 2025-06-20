@@ -1,4 +1,4 @@
-package cn.pug.dynamic.task.common.example;
+package cn.pug.dynamic.task.example;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
