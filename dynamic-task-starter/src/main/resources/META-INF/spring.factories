@@ -1,2 +1,2 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-cn.pug.dynamic.task.config.DynamicTaskAutoConfiguration
+cn.pug.dynamic.task.core.config.DynamicTaskAutoConfiguration
