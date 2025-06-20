@@ -1,5 +1,6 @@
 package cn.pug.dynamic.task.core.executor.logging;
 
+import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.AppenderBase;
@@ -21,22 +22,24 @@ public class ThreadInputFileAppender extends AppenderBase<ILoggingEvent> {
     // 格式化
     protected static String pattern;
 
+    protected static boolean debug;
+
     private final Map<String, FileAppender<ILoggingEvent>> appenderMap=new ConcurrentHashMap<>();
 
 
     public ThreadInputFileAppender(DynamicTaskProperties dynamicTaskProperties){
         logDir=dynamicTaskProperties.getLogConfig().getLogDir();
         pattern=dynamicTaskProperties.getLogConfig().getPattern();
+        debug=dynamicTaskProperties.getLogConfig().isDebug();
     }
 
     @Override
     protected void append(ILoggingEvent event) {
         String logGroup = MDC.get(LogContext.LOG_GROUP_KEY);
-        if (logGroup == null) {
+        if (logGroup == null||(!debug&&!event.getLevel().isGreaterOrEqual(Level.INFO))) {
             // 如果没有设置logGroup，使用默认appender
             return;
         }
-
         FileAppender<ILoggingEvent> appender = getOrCreateAppender(logGroup);
         if (appender != null) {
             appender.doAppend(event);

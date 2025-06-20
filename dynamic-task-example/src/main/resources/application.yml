@@ -5,6 +5,7 @@ script:
   log-config:
     log-dir: "logs/dynamic-task"
     pattern: "%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%file-%line] - Msg:%msg%n"
+    debug: true
   executor:
     - name: a
       core-pool-size: 10
