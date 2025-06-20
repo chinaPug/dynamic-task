@@ -6,7 +6,6 @@ import com.alibaba.ttl.TransmittableThreadLocal;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 
-import java.io.File;
 
 @Slf4j
 public class LogContext {
@@ -26,6 +25,9 @@ public class LogContext {
         log.debug("设置日志上下文: taskId-identifyVal={}", MDC.get(TASK_ID_PARAM_KEY));
     }
 
+    /**
+     * 如果你想自定义日志文件名，重写这个方法即可
+     */
     public static void setLogGroup(){
         MDC.put(LOG_GROUP_KEY, Thread.currentThread().getName().concat("-").concat(MDC.get(TASK_ID_PARAM_KEY)));
         log.debug("设置日志上下文: log-group={}", MDC.get(LOG_GROUP_KEY));
@@ -38,8 +40,6 @@ public class LogContext {
     public static InputWrapper<?> getInputWrapper() {
         return INPUT_WRAPPER_HODLER.get();
     }
-
-
 
     /**
      * 清除日志上下文

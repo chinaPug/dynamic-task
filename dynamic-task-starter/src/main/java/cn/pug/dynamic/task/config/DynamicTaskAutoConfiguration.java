@@ -62,7 +62,8 @@ public class DynamicTaskAutoConfiguration {
 
 
     @Bean
-    LogContext logContext(LogAdvicePublisher logAdvicePublisher) {
+    @ConditionalOnMissingBean(LogContext.class)
+    public LogContext logContext(LogAdvicePublisher logAdvicePublisher) {
         return new LogContext(logAdvicePublisher);
     }
 } 
