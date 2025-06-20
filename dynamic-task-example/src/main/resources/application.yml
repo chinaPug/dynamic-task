@@ -4,11 +4,16 @@ script:
   enabled-banner: true
   log-config:
     log-dir: "logs/dynamic-task"
-    pattern: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n[File:%file Line:%line]%n"
+    pattern: "%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%file-%line] - Msg:%msg%n"
   executor:
     - name: a
-      core-pool-size: 1
-      max-pool-size: 1
+      core-pool-size: 10
+      max-pool-size: 10
+      queue-capacity: 10
+      keep-alive-seconds: 60
+    - name: b
+      core-pool-size: 10
+      max-pool-size: 10
       queue-capacity: 10
       keep-alive-seconds: 60
 

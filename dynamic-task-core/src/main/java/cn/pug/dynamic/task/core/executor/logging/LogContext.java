@@ -8,7 +8,7 @@ import org.slf4j.MDC;
 @Slf4j
 public class LogContext {
     static final String TASK_ID_PARAM_KEY = "taskId-identifyVal";
-    static final String LOG_GROUP_KEY = "logGroup";
+    static final String LOG_GROUP_KEY = "log-group";
 
     private static final TransmittableThreadLocal<InputWrapper<?>> INPUT_WRAPPER_HODLER=new TransmittableThreadLocal<>();
 
@@ -20,7 +20,7 @@ public class LogContext {
 
     public static void setLogGroup(){
         MDC.put(LOG_GROUP_KEY, Thread.currentThread().getName().concat("-").concat(MDC.get(TASK_ID_PARAM_KEY)));
-        log.debug("设置日志上下文: taskId-identifyVal={}", MDC.get(TASK_ID_PARAM_KEY));
+        log.debug("设置日志上下文: log-group={}", MDC.get(LOG_GROUP_KEY));
     }
 
     /**
