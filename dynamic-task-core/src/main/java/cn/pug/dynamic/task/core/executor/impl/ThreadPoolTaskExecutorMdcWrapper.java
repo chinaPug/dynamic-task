@@ -67,6 +67,7 @@ public class ThreadPoolTaskExecutorMdcWrapper extends ThreadPoolTaskExecutor {
                 }
                 runnable.run();
             }finally {
+                LogContext.clear();
                 MDC.clear();
             }
         };
