@@ -11,6 +11,6 @@ public class LogEventListener {
 
     @EventListener(LogAdvicePublisher.LogAdviceEvent.class)
     public void onLogAdviceEvent(LogAdvicePublisher.LogAdviceEvent logAdviceEvent){
-        log.info(logAdviceEvent.getLogPath());
+        log.info("监听器消息：{}",logAdviceEvent.toString());
     }
 }

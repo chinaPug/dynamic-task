@@ -27,6 +27,7 @@ public class ExecutorServiceWrapper {
             log.debug("任务{}运行开始", inputWrapper.toString());
             OutputWrapper<?> outputWrapper =sceneService.action(inputWrapper);
             log.debug("任务{}运行结束", outputWrapper);
+            LogContext.setOutputWrapper(outputWrapper);
             return outputWrapper;
         }, threadPoolTaskExecutor);
     }

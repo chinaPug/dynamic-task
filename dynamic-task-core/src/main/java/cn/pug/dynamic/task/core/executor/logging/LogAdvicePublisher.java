@@ -1,6 +1,10 @@
 package cn.pug.dynamic.task.core.executor.logging;
 
+import cn.pug.dynamic.task.common.api.model.InputWrapper;
+import cn.pug.dynamic.task.common.api.model.OutputWrapper;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.ToString;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 
@@ -15,12 +19,13 @@ public class LogAdvicePublisher implements ApplicationEventPublisherAware {
     }
 
     @Data
+    @ToString
+    @AllArgsConstructor
     public class LogAdviceEvent{
+        private InputWrapper<?> inputWrapper;
+        private OutputWrapper<?> outputWrapper;
         private String logPath;
 
-        public LogAdviceEvent(String logPath){
-            this.logPath=logPath;
-        }
         void publish(){
             applicationEventPublisher.publishEvent(this);
         }
