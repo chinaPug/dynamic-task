@@ -7,6 +7,8 @@ import com.alibaba.ttl.TransmittableThreadLocal;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 
+import java.io.File;
+
 
 @Slf4j
 public class LogContext {
@@ -55,7 +57,7 @@ public class LogContext {
     public static void clear() {
         LogContext.logAdvicePublisher.new LogAdviceEvent(INPUT_WRAPPER_HODLER.get(),
                 OUTPUT_WRAPPER_HODLER.get(),
-                FileUtil.getAbsolutePath(getLogFileName())).publish();
+                FileUtil.getAbsolutePath(System.getProperty("user.dir")+File.separator+ThreadInputFileAppender.logDir+ File.separator+getLogFileName())).publish();
         INPUT_WRAPPER_HODLER.remove();
         // 清除MDC
         MDC.remove(TASK_ID_PARAM_KEY);

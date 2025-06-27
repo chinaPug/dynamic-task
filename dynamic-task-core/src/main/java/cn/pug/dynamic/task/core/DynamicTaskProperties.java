@@ -31,7 +31,7 @@ public class DynamicTaskProperties {
 
     @Data
     public static class LogConfig{
-        private String logDir="logs/dynamic-task";
+        private String logDir="./logs/dynamic-task";
         private String pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%file-%line] - Msg:%msg%n";
         private boolean debug=false;
     }

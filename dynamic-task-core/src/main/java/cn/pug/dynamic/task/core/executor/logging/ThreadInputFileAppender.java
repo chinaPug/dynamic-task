@@ -6,6 +6,7 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.AppenderBase;
 import ch.qos.logback.core.FileAppender;
 import cn.pug.dynamic.task.core.DynamicTaskProperties;
+import cn.pug.dynamic.task.core.util.ApplicationContextHolder;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
@@ -17,21 +18,27 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 @NoArgsConstructor
 public class ThreadInputFileAppender extends AppenderBase<ILoggingEvent> {
-    // 日志根目录
-    protected static String logDir;;
-    // 格式化
-    protected static String pattern;
+    private static final String LOGGING_PATH ="LOG.PATH";
 
-    protected static boolean debug;
+    // 日志根目录
+    public static String logDir;;
+    // 格式化
+    public static String pattern;
+
+    public static boolean debug;
 
     private final Map<String, FileAppender<ILoggingEvent>> appenderMap=new ConcurrentHashMap<>();
 
-
-    public ThreadInputFileAppender(DynamicTaskProperties dynamicTaskProperties){
-        logDir=dynamicTaskProperties.getLogConfig().getLogDir();
-        pattern=dynamicTaskProperties.getLogConfig().getPattern();
-        debug=dynamicTaskProperties.getLogConfig().isDebug();
+    static {
+        DynamicTaskProperties dynamicTaskProperties=ApplicationContextHolder.getBean(DynamicTaskProperties.class);
+        DynamicTaskProperties.LogConfig logConfig=dynamicTaskProperties.getLogConfig();
+        ThreadInputFileAppender.logDir=logConfig.getLogDir();
+        ThreadInputFileAppender.pattern=logConfig.getPattern();
+        ThreadInputFileAppender.debug=logConfig.isDebug();
+        log.info("日志配置信息：【{}】", logConfig);
+        System.setProperty(LOGGING_PATH,logDir);
     }
+
 
     @Override
     protected void append(ILoggingEvent event) {
