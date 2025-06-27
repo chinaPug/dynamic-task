@@ -1,2 +1,4 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
 cn.pug.dynamic.task.config.DynamicTaskAutoConfiguration
+org.springframework.context.ApplicationListener=\
+cn.pug.dynamic.task.core.executor.logging.LoggingListener
