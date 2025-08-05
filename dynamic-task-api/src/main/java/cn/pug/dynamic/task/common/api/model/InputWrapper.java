@@ -15,5 +15,6 @@ public class InputWrapper<T> {
     protected String taskId;
     protected String identifyVal;
     protected String scriptVersion;
+    protected String scriptUrl;
     protected T data;
 }

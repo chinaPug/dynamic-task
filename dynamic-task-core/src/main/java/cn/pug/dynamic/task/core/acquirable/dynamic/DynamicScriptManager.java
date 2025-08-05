@@ -1,6 +1,7 @@
 package cn.pug.dynamic.task.core.acquirable.dynamic;
 
 import cn.pug.dynamic.task.core.DynamicTaskProperties;
+import cn.pug.dynamic.task.core.acquirable.JarLoader;
 import cn.pug.dynamic.task.core.constant.TaskCodeMsg;
 import cn.pug.dynamic.task.core.exception.PredicateException;
 import cn.pug.dynamic.task.core.acquirable.ScriptManager;
@@ -24,11 +25,16 @@ public class DynamicScriptManager implements ScriptManager {
     private final Map<String, SceneServiceSoftReference> sceneMap = new ConcurrentHashMap<>(64);
     private final ReferenceQueue<Map.Entry<String, SceneService<?,?>>> referenceQueue = new ReferenceQueue<>();
     private final DynamicTaskProperties properties;
+    private JarLoader jarLoader;
 
     public DynamicScriptManager(DynamicTaskProperties properties) {
         this.properties = properties;
     }
-
+    
+    public DynamicScriptManager(DynamicTaskProperties properties, JarLoader jarLoader) {
+        this.properties = properties;
+        this.jarLoader = jarLoader;
+    }
 
     private void cleanupReferences() {
         try {
@@ -102,12 +108,16 @@ public class DynamicScriptManager implements ScriptManager {
         SceneService<?,?> scene;
         Class<? extends SceneService<?,?>> clazz = null;
         log.debug("正在注册场景，JAR包：{}", jarName);
-
-        File localJar = new File(this.properties.getLocalJarPath().concat("/").concat(jarName));
-        if (localJar.exists()) {
+        File jarFile;
+        if (jarLoader!=null){
+            jarFile = jarLoader.loadJar(inputWrapper.getScriptUrl());
+        }else {
+            jarFile = new File(this.properties.getLocalJarPath().concat("/").concat(jarName));
+        }
+        if (jarFile.exists()) {
             try {
-                log.debug("正在从本地路径加载JAR包：{}", localJar.getAbsolutePath());
-                jarUrl = localJar.toURI().toURL();
+                log.debug("正在从本地路径加载JAR包：{}", jarFile.getAbsolutePath());
+                jarUrl = jarFile.toURI().toURL();
                 clazz = DynamicScriptClassLoader.loadJarFromUrl(jarUrl);
             } catch (Exception e) {
                 log.error("从本地JAR包加载场景失败：{}", jarName, e);
