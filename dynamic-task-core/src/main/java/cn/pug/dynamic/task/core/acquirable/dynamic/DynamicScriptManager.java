@@ -106,7 +106,7 @@ public class DynamicScriptManager implements ScriptManager {
         String jarName = identifyVal.concat("-").concat(scriptVersion).concat(".jar");
         URL jarUrl;
         SceneService<?,?> scene;
-        Class<? extends SceneService<?,?>> clazz = null;
+        Class<? extends SceneService<?,?>> clazz;
         log.debug("正在注册场景，JAR包：{}", jarName);
         File jarFile;
         if (jarLoader!=null){
