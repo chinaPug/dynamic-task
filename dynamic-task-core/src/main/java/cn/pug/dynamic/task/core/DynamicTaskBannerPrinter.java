@@ -28,7 +28,7 @@ public class DynamicTaskBannerPrinter implements InitializingBean {
         if (!DynamicTaskProperties.isEnabledBanner()) {
             return;
         }
-        log.info(AnsiOutput.toString(BANNER, "\n", AnsiColor.GREEN, NAME,
+        log.debug(AnsiOutput.toString(BANNER, "\n", AnsiColor.GREEN, NAME,
                 AnsiColor.DEFAULT, AnsiStyle.FAINT));
     }
 }

@@ -32,6 +32,9 @@ public class ExecutorServiceWrapper {
         }, threadPoolTaskExecutor);
     }
 
+    public String getThreadPoolTaskExecutorName() {
+        return threadPoolTaskExecutorName;
+    }
 
     List<Runnable> shutdownNow() {
         return threadPoolTaskExecutor.getThreadPoolExecutor().shutdownNow();

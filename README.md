@@ -155,12 +155,12 @@ public class MyTask implements Scene<String> {
     public CompletableFuture<Result> action(Event inputWrapper) {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                logger.info("开始执行任务: {}", inputWrapper.getTaskId());
+                logger.debug("开始执行任务: {}", inputWrapper.getTaskId());
                 
                 // 实现任务逻辑
                 String result = processTask(inputWrapper);
                 
-                logger.info("任务执行完成: {}", inputWrapper.getTaskId());
+                logger.debug("任务执行完成: {}", inputWrapper.getTaskId());
                 return Result.success(result);
                 
             } catch (Exception e) {

@@ -35,7 +35,7 @@ public class ThreadInputFileAppender extends AppenderBase<ILoggingEvent> {
         ThreadInputFileAppender.logDir=logConfig.getLogDir();
         ThreadInputFileAppender.pattern=logConfig.getPattern();
         ThreadInputFileAppender.debug=logConfig.isDebug();
-        log.info("日志配置信息：【{}】", logConfig);
+        log.debug("日志配置信息：【{}】", logConfig);
         System.setProperty(LOGGING_PATH,logDir);
     }
 
@@ -82,7 +82,7 @@ public class ThreadInputFileAppender extends AppenderBase<ILoggingEvent> {
 
             appender.start();
 
-            log.info("创建线程业务日志appender: {}", filePath);
+            log.debug("创建线程业务日志appender: {}", filePath);
             return appender;
 
         } catch (Exception e) {

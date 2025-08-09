@@ -8,6 +8,7 @@ import cn.pug.dynamic.task.core.acquirable.ScriptAcquirable;
 import cn.pug.dynamic.task.core.acquirable.dynamic.DynamicScriptManager;
 import cn.pug.dynamic.task.core.actuator.Actuator;
 import cn.pug.dynamic.task.core.actuator.impl.DefaultActuatorImpl;
+import cn.pug.dynamic.task.core.executor.ExecutorLoaderBalance;
 import cn.pug.dynamic.task.core.executor.ExecutorManager;
 import cn.pug.dynamic.task.core.executor.impl.DefaultExecutorManager;
 import cn.pug.dynamic.task.core.executor.logging.LogAdvicePublisher;
@@ -43,7 +44,7 @@ public class DynamicTaskAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(ScriptAcquirable.class)
     public ScriptAcquirable scriptAcquirable(@Autowired(required = false) JarLoader jarLoader) {
-        log.info("初始化动态脚本管理器，是否使用自定义Jar加载器: {}", jarLoader != null);
+        log.debug("初始化动态脚本管理器，是否使用自定义Jar加载器: {}", jarLoader != null);
         if (jarLoader != null) {
             log.debug("使用自定义Jar加载器初始化DynamicScriptManager");
             return new DynamicScriptManager(properties, jarLoader);
@@ -67,8 +68,15 @@ public class DynamicTaskAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(ExecutorManager.class)
-    public ExecutorManager executorManager() {
-        return new DefaultExecutorManager(properties);
+    public ExecutorManager executorManager(@Autowired(required = false) ExecutorLoaderBalance executorLoaderBalance) {
+        log.debug("初始化动态脚本管理器，是否使用自定义线程池负载均衡器: {}", executorLoaderBalance != null);
+        if (executorLoaderBalance != null) {
+            log.debug("使用自定义线程池负载均衡器");
+            return new DefaultExecutorManager(properties, executorLoaderBalance);
+        } else {
+            log.debug("使用默认的线程池负载均衡器");
+            return new DefaultExecutorManager(properties);
+        }
     }
 
 
