@@ -36,7 +36,7 @@ public class DynamicTaskAutoConfiguration {
     private DynamicTaskProperties properties;
 
     @Bean
-    public ApplicationContextHolder dtpApplicationContextHolder() {
+    public ApplicationContextHolder applicationContextHolder() {
         return new ApplicationContextHolder();
     }
 
