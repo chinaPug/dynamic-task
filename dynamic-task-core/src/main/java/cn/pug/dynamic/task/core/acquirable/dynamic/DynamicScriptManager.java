@@ -1,6 +1,7 @@
 package cn.pug.dynamic.task.core.acquirable.dynamic;
 
 import cn.pug.dynamic.task.core.DynamicTaskProperties;
+import cn.pug.dynamic.task.core.acquirable.JarLoader;
 import cn.pug.dynamic.task.core.constant.TaskCodeMsg;
 import cn.pug.dynamic.task.core.exception.PredicateException;
 import cn.pug.dynamic.task.core.acquirable.ScriptManager;
@@ -21,39 +22,29 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 public class DynamicScriptManager implements ScriptManager {
     // identifyVal->软引用封装类
-    private final Map<String, SceneServiceSoftReference> sceneMap = new ConcurrentHashMap<>(64);
-    private final ReferenceQueue<Map.Entry<String, SceneService<?,?>>> referenceQueue = new ReferenceQueue<>();
+    private final Map<String, Map.Entry<String, SceneService<?,?>>> sceneMap = new ConcurrentHashMap<>(64);
     private final DynamicTaskProperties properties;
+    private JarLoader jarLoader;
 
     public DynamicScriptManager(DynamicTaskProperties properties) {
         this.properties = properties;
     }
-
-
-    private void cleanupReferences() {
-        try {
-            SceneServiceSoftReference ref;
-            while ((ref = (SceneServiceSoftReference)referenceQueue.poll()) != null) {
-                final SceneServiceSoftReference finalRef = ref;
-                sceneMap.entrySet().removeIf(entry -> entry.getValue() == finalRef);
-                log.warn("{}脚本由于内存不足被回收",finalRef.identifyVal);
-            }
-        } catch (Exception e) {
-            log.error("脚本回收出现问题", e);
-        }
+    
+    public DynamicScriptManager(DynamicTaskProperties properties, JarLoader jarLoader) {
+        this.properties = properties;
+        this.jarLoader = jarLoader;
     }
+
 
     @Override
     public SceneService<?,?> getSceneService(InputWrapper<?> inputWrapper) {
-        // 清除垃圾
-        cleanupReferences();
         String identifyVal = inputWrapper.getIdentifyVal();
         String scriptVersion = inputWrapper.getScriptVersion();
         log.debug("正在获取场景，标识值：{}，版本：{}", identifyVal, scriptVersion);
-        // 根据identifyVal获取软引用封装类
-        SoftReference<Map.Entry<String, SceneService<?,?>>> ref = sceneMap.get(identifyVal);
+        // 根据identifyVal获取
+        //如果为null，则说明该类没被加载过或者已经被卸载
+        Map.Entry<String, SceneService<?,?>> entry = sceneMap.get(identifyVal);
         //如果润引用封装类为null，则说明该类没被加载过或者已经被卸载
-        Map.Entry<String, SceneService<?,?>> entry = ref != null ? ref.get() : null;
         if (entry != null) {
             // 获取当前版本号
             String currentVersion = entry.getKey();
@@ -66,8 +57,10 @@ public class DynamicScriptManager implements ScriptManager {
                     // 注册新版本
                     registerSceneService(inputWrapper);
                     // 再次根据identifyVal获取软引用封装类
-                    ref = sceneMap.get(identifyVal);
-                    entry = Objects.requireNonNull(ref.get());
+                    entry = sceneMap.get(identifyVal);
+                    if (entry == null) {
+                        throw new RuntimeException("无法加载scene");
+                    }
                 case 0:
                     log.debug("在缓存中找到匹配的场景版本");
                     return entry.getValue();
@@ -78,10 +71,9 @@ public class DynamicScriptManager implements ScriptManager {
         } else {
             log.debug("缓存中未找到场景，正在注册新场景");
             registerSceneService(inputWrapper);
-            ref = sceneMap.get(identifyVal);
-            entry = ref != null ? ref.get() : null;
+            entry = sceneMap.get(identifyVal);
             if (entry == null) {
-                throw new RuntimeException("Failed to load new scene");
+                throw new RuntimeException("无法加载scene");
             }
             return entry.getValue();
         }
@@ -89,8 +81,6 @@ public class DynamicScriptManager implements ScriptManager {
 
     @Override
     public synchronized void registerSceneService(InputWrapper<?> inputWrapper) {
-        // 清除垃圾
-        cleanupReferences();
         String identifyVal = inputWrapper.getIdentifyVal();
         String scriptVersion = inputWrapper.getScriptVersion();
         // 结合该方法是同步方法使用
@@ -100,14 +90,18 @@ public class DynamicScriptManager implements ScriptManager {
         String jarName = identifyVal.concat("-").concat(scriptVersion).concat(".jar");
         URL jarUrl;
         SceneService<?,?> scene;
-        Class<? extends SceneService<?,?>> clazz = null;
+        Class<? extends SceneService<?,?>> clazz;
         log.debug("正在注册场景，JAR包：{}", jarName);
-
-        File localJar = new File(this.properties.getLocalJarPath().concat("/").concat(jarName));
-        if (localJar.exists()) {
+        File jarFile;
+        if (jarLoader!=null){
+            jarFile = jarLoader.loadJar(inputWrapper.getScriptUrl());
+        }else {
+            jarFile = new File(this.properties.getLocalJarPath().concat("/").concat(jarName));
+        }
+        if (jarFile.exists()) {
             try {
-                log.debug("正在从本地路径加载JAR包：{}", localJar.getAbsolutePath());
-                jarUrl = localJar.toURI().toURL();
+                log.debug("正在从本地路径加载JAR包：{}", jarFile.getAbsolutePath());
+                jarUrl = jarFile.toURI().toURL();
                 clazz = DynamicScriptClassLoader.loadJarFromUrl(jarUrl);
             } catch (Exception e) {
                 log.error("从本地JAR包加载场景失败：{}", jarName, e);
@@ -124,7 +118,7 @@ public class DynamicScriptManager implements ScriptManager {
         }
         
         Map.Entry<String, SceneService<?,?>> entry = new AbstractMap.SimpleEntry<>(scriptVersion, scene);
-        sceneMap.put(identifyVal, new SceneServiceSoftReference(entry, referenceQueue));
+        sceneMap.put(identifyVal,entry);
     }
 
     @Override
@@ -136,12 +130,12 @@ public class DynamicScriptManager implements ScriptManager {
     }
 
 
-    private static class SceneServiceSoftReference extends SoftReference<Map.Entry<String, SceneService<?,?>>> {
-        private final String identifyVal;
-        public SceneServiceSoftReference(Map.Entry<String, SceneService<?,?>> referent, ReferenceQueue<? super Map.Entry<String, SceneService<?,?>>> q) {
-            super(referent, q);
-            // 这里需要用new String否则属于强引用了封装类对象，就不会被回收
-            identifyVal= new String(referent.getKey());
-        }
-    }
+//    private static class SceneServiceSoftReference extends SoftReference<Map.Entry<String, SceneService<?,?>>> {
+//        private final String identifyVal;
+//        public SceneServiceSoftReference(Map.Entry<String, SceneService<?,?>> referent, ReferenceQueue<? super Map.Entry<String, SceneService<?,?>>> q) {
+//            super(referent, q);
+//            // 这里需要用new String否则属于强引用了封装类对象，就不会被回收
+//            identifyVal= new String(referent.getKey());
+//        }
+//    }
 } 

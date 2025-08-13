@@ -24,10 +24,11 @@ public final class DefaultActuatorImpl implements Actuator {
         this.executorManager = executorManager;
     }
 
-    public boolean isValidEvent(InputWrapper inputWrapper) {
-        return !(inputWrapper.getTaskId() == null || inputWrapper.getTaskId().isEmpty()
-                || inputWrapper.getIdentifyVal() == null || inputWrapper.getIdentifyVal().isEmpty()
-                || inputWrapper.getScriptVersion() == null || inputWrapper.getScriptVersion().isEmpty());
+    private boolean isValidEvent(InputWrapper inputWrapper) {
+        return inputWrapper != null
+                && inputWrapper.getTaskId() != null && !inputWrapper.getTaskId().isEmpty()
+                && inputWrapper.getIdentifyVal() != null && !inputWrapper.getIdentifyVal().isEmpty()
+                && inputWrapper.getScriptVersion() != null && !inputWrapper.getScriptVersion().isEmpty();
     }
 
     /**
@@ -39,10 +40,6 @@ public final class DefaultActuatorImpl implements Actuator {
     @Override
     public CompletableFuture<OutputWrapper<?>> submit(InputWrapper<?> inputWrapper) {
         /*Event检验**/
-        if (inputWrapper == null) {
-            log.error("任务【{}】——event为null", "null");
-            throw new PredicateException(TaskCodeMsg.EVENT_IS_NULL);
-        }
         if (!isValidEvent(inputWrapper)) {
             log.error("任务【{}】——输入参数不合法", inputWrapper.getTaskId() == null ? "null" : inputWrapper.getTaskId());
             throw new PredicateException(TaskCodeMsg.EVENT_PARAM_ERROR);

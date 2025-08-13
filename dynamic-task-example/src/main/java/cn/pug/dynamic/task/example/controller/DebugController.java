@@ -3,7 +3,6 @@ package cn.pug.dynamic.task.example.controller;
 import cn.pug.dynamic.task.common.api.model.InputWrapper;
 import cn.pug.dynamic.task.core.actuator.Actuator;
 import cn.pug.dynamic.task.common.api.model.OutputWrapper;
-import cn.pug.script.api.pojo.dto.Event;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
