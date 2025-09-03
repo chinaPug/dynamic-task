@@ -7,32 +7,42 @@ import cn.pug.dynamic.task.core.exception.PredicateException;
 import cn.pug.dynamic.task.core.acquirable.ScriptManager;
 import cn.pug.dynamic.task.common.api.SceneService;
 import cn.pug.dynamic.task.common.api.model.InputWrapper;
+import cn.pug.dynamic.task.core.util.VersionComparator;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.RemovalCause;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
-import java.lang.ref.ReferenceQueue;
-import java.lang.ref.SoftReference;
 import java.net.URL;
 import java.util.AbstractMap;
+import java.util.Comparator;
 import java.util.Map;
-import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
 
 
 @Slf4j
 public class DynamicScriptManager implements ScriptManager {
-    // identifyVal->软引用封装类
-    private final Map<String, Map.Entry<String, SceneService<?,?>>> sceneMap = new ConcurrentHashMap<>(64);
-    private final DynamicTaskProperties properties;
+    private  Cache<String, Map.Entry<String, SceneService<?,?>>> sceneCache;
+    private  DynamicTaskProperties properties;
     private JarLoader jarLoader;
-
+    private Comparator<String> versionComparator = new VersionComparator();
     public DynamicScriptManager(DynamicTaskProperties properties) {
-        this.properties = properties;
+        init(properties);
     }
     
     public DynamicScriptManager(DynamicTaskProperties properties, JarLoader jarLoader) {
-        this.properties = properties;
         this.jarLoader = jarLoader;
+        init(properties);
+    }
+
+    private void init(DynamicTaskProperties properties){
+        this.properties = properties;
+        this.sceneCache = Caffeine.newBuilder()
+                .softValues() // 使用软引用存储值
+                .removalListener((String key, Map.Entry<String, SceneService<?,?>> value, RemovalCause cause) -> {
+                    log.debug("脚本{}被移除，原因{}", key, cause);
+                })
+                .build();
     }
 
 
@@ -43,13 +53,13 @@ public class DynamicScriptManager implements ScriptManager {
         log.debug("正在获取场景，标识值：{}，版本：{}", identifyVal, scriptVersion);
         // 根据identifyVal获取
         //如果为null，则说明该类没被加载过或者已经被卸载
-        Map.Entry<String, SceneService<?,?>> entry = sceneMap.get(identifyVal);
+        Map.Entry<String, SceneService<?,?>> entry = sceneCache.getIfPresent(identifyVal);
         //如果润引用封装类为null，则说明该类没被加载过或者已经被卸载
         if (entry != null) {
             // 获取当前版本号
             String currentVersion = entry.getKey();
             // 对比需求版本
-            switch (scriptVersion.compareTo(currentVersion)) {
+            switch (versionComparator.compare(scriptVersion,currentVersion)) {
                 case 1:
                     log.debug("需要更新到新版本，正在卸载旧版本");
                     // 卸载旧版本
@@ -57,7 +67,7 @@ public class DynamicScriptManager implements ScriptManager {
                     // 注册新版本
                     registerSceneService(inputWrapper);
                     // 再次根据identifyVal获取软引用封装类
-                    entry = sceneMap.get(identifyVal);
+                    entry = sceneCache.getIfPresent(identifyVal);
                     if (entry == null) {
                         throw new RuntimeException("无法加载scene");
                     }
@@ -71,7 +81,7 @@ public class DynamicScriptManager implements ScriptManager {
         } else {
             log.debug("缓存中未找到场景，正在注册新场景");
             registerSceneService(inputWrapper);
-            entry = sceneMap.get(identifyVal);
+            entry = sceneCache.getIfPresent(identifyVal);
             if (entry == null) {
                 throw new RuntimeException("无法加载scene");
             }
@@ -84,7 +94,7 @@ public class DynamicScriptManager implements ScriptManager {
         String identifyVal = inputWrapper.getIdentifyVal();
         String scriptVersion = inputWrapper.getScriptVersion();
         // 结合该方法是同步方法使用
-        if (sceneMap.containsKey(identifyVal)) {
+        if (sceneCache.asMap().containsKey(identifyVal)) {
             return;
         }
         String jarName = identifyVal.concat("-").concat(scriptVersion).concat(".jar");
@@ -118,24 +128,16 @@ public class DynamicScriptManager implements ScriptManager {
         }
         
         Map.Entry<String, SceneService<?,?>> entry = new AbstractMap.SimpleEntry<>(scriptVersion, scene);
-        sceneMap.put(identifyVal,entry);
+        sceneCache.put(identifyVal,entry);
     }
 
     @Override
     public void unloadSceneService(InputWrapper<?> inputWrapper) {
         String identifyVal = inputWrapper.getIdentifyVal();
         log.debug("正在卸载场景，标识值：{}", identifyVal);
-        sceneMap.remove(identifyVal);
+        sceneCache.invalidate(identifyVal);
         log.debug("场景卸载完成");
     }
 
 
-//    private static class SceneServiceSoftReference extends SoftReference<Map.Entry<String, SceneService<?,?>>> {
-//        private final String identifyVal;
-//        public SceneServiceSoftReference(Map.Entry<String, SceneService<?,?>> referent, ReferenceQueue<? super Map.Entry<String, SceneService<?,?>>> q) {
-//            super(referent, q);
-//            // 这里需要用new String否则属于强引用了封装类对象，就不会被回收
-//            identifyVal= new String(referent.getKey());
-//        }
-//    }
 } 

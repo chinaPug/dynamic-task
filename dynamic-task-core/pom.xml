@@ -55,6 +55,10 @@
             <artifactId>hutool-all</artifactId>
             <version>5.8.24</version>
         </dependency>
+        <dependency>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
