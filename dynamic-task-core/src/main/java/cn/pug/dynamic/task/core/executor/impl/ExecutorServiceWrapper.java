@@ -24,6 +24,7 @@ public class ExecutorServiceWrapper {
     CompletableFuture<OutputWrapper<?>> submit(InputWrapper inputWrapper, SceneService<?,?> sceneService) {
         return CompletableFuture.supplyAsync(() -> {
             LogContext.setInputWrapper(inputWrapper);
+            LogContext.setLogGroup();
             log.debug("任务{}运行开始", inputWrapper.getTaskId());
             OutputWrapper<?> outputWrapper =sceneService.action(inputWrapper);
             log.debug("任务{}运行结束", outputWrapper.getTaskId());

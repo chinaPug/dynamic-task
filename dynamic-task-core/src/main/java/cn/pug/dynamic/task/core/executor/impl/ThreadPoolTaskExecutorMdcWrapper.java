@@ -49,7 +49,6 @@ public class ThreadPoolTaskExecutorMdcWrapper extends ThreadPoolTaskExecutor {
             try {
                 if (Objects.nonNull(context)) {
                     MDC.setContextMap(context);
-                    LogContext.setLogGroup();
                 }
                 return callable.call();
             }finally {
